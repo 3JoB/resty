@@ -19,6 +19,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/3JoB/unsafeConvert"
 )
 
 type AuthSuccess struct {
@@ -166,7 +168,7 @@ func TestPostJSONBytesSuccess(t *testing.T) {
 		SetHeaders(map[string]string{hdrUserAgentKey: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) go-resty v0.7", hdrAcceptKey: "application/json; charset=utf-8"})
 
 	resp, err := c.R().
-		SetBody([]byte(`{"username":"testuser", "password":"testpass"}`)).
+		SetBody(unsafeConvert.BytesReflect(`{"username":"testuser", "password":"testpass"}`)).
 		Post(ts.URL + "/login")
 
 	assertError(t, err)
@@ -182,7 +184,7 @@ func TestPostJSONBytesIoReader(t *testing.T) {
 	c := dc()
 	c.SetHeader(hdrContentTypeKey, "application/json; charset=utf-8")
 
-	bodyBytes := []byte(`{"username":"testuser", "password":"testpass"}`)
+	bodyBytes := unsafeConvert.BytesReflect(`{"username":"testuser", "password":"testpass"}`)
 
 	resp, err := c.R().
 		SetBody(bytes.NewReader(bodyBytes)).
@@ -449,7 +451,7 @@ func TestPostXMLBytesSuccess(t *testing.T) {
 
 	resp, err := c.R().
 		SetHeader(hdrContentTypeKey, "application/xml").
-		SetBody([]byte(`<?xml version="1.0" encoding="UTF-8"?><User><Username>testuser</Username><Password>testpass</Password></User>`)).
+		SetBody(unsafeConvert.BytesReflect(`<?xml version="1.0" encoding="UTF-8"?><User><Username>testuser</Username><Password>testpass</Password></User>`)).
 		SetQueryParam("request_no", strconv.FormatInt(time.Now().Unix(), 10)).
 		SetContentLength(true).
 		Post(ts.URL + "/login")
@@ -821,7 +823,7 @@ func TestMultiPartIoReaderFiles(t *testing.T) {
 	file := File{
 		Name:      "test_file_name.jpg",
 		ParamName: "test_param",
-		Reader:    bytes.NewBuffer([]byte("test bytes")),
+		Reader:    bytes.NewBuffer(unsafeConvert.BytesReflect("test bytes")),
 	}
 	t.Logf("File Info: %v", file.String())
 
@@ -898,7 +900,7 @@ func TestMultiPartMultipartField(t *testing.T) {
 	defer ts.Close()
 	defer cleanupFiles(".testdata/upload")
 
-	jsonBytes := []byte(`{"input": {"name": "Uploaded document", "_filename" : ["file.txt"]}}`)
+	jsonBytes := unsafeConvert.BytesReflect(`{"input": {"name": "Uploaded document", "_filename" : ["file.txt"]}}`)
 
 	resp, err := dclr().
 		SetFormDataFromValues(url.Values{

@@ -14,6 +14,8 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/3JoB/unsafeConvert"
 )
 
 func TestSetContext(t *testing.T) {
@@ -57,7 +59,7 @@ func TestSetContextCancel(t *testing.T) {
 		t.Logf("Server: %v %v", r.Method, r.URL.Path)
 		ch <- struct{}{}
 		<-ch // wait for client to finish request
-		n, err := w.Write([]byte("TestSetContextCancel: response"))
+		n, err := w.Write(unsafeConvert.BytesReflect("TestSetContextCancel: response"))
 		// FIXME? test server doesn't handle request cancellation
 		t.Logf("Server: wrote %d bytes", n)
 		t.Logf("Server: err is %v ", err)
@@ -96,7 +98,7 @@ func TestSetContextCancelRetry(t *testing.T) {
 		t.Logf("Server: %v %v", r.Method, r.URL.Path)
 		ch <- struct{}{}
 		<-ch // wait for client to finish request
-		n, err := w.Write([]byte("TestSetContextCancel: response"))
+		n, err := w.Write(unsafeConvert.BytesReflect("TestSetContextCancel: response"))
 		// FIXME? test server doesn't handle request cancellation
 		t.Logf("Server: wrote %d bytes", n)
 		t.Logf("Server: err is %v ", err)
@@ -143,7 +145,7 @@ func TestSetContextCancelWithError(t *testing.T) {
 		w.WriteHeader(http.StatusBadRequest)
 		ch <- struct{}{}
 		<-ch // wait for client to finish request
-		n, err := w.Write([]byte("TestSetContextCancelWithError: response"))
+		n, err := w.Write(unsafeConvert.BytesReflect("TestSetContextCancelWithError: response"))
 		// FIXME? test server doesn't handle request cancellation
 		t.Logf("Server: wrote %d bytes", n)
 		t.Logf("Server: err is %v ", err)
@@ -180,7 +182,7 @@ func TestClientRetryWithSetContext(t *testing.T) {
 		if attp <= 4 {
 			time.Sleep(time.Second * 2)
 		}
-		_, _ = w.Write([]byte("TestClientRetry page"))
+		_, _ = w.Write(unsafeConvert.BytesReflect("TestClientRetry page"))
 	})
 	defer ts.Close()
 

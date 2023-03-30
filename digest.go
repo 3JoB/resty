@@ -17,6 +17,7 @@ import (
 	"strings"
 
 	errs "github.com/3JoB/ulib/err"
+	"github.com/3JoB/unsafeConvert"
 	"lukechampine.com/frand"
 )
 
@@ -240,7 +241,7 @@ func (c *credentials) validateQop() error {
 func (c *credentials) h(data string) string {
 	hfCtor := hashFuncs[c.algorithm]
 	hf := hfCtor()
-	_, _ = hf.Write([]byte(data)) // Hash.Write never returns an error
+	_, _ = hf.Write(unsafeConvert.BytesReflect(data)) // Hash.Write never returns an error
 	return fmt.Sprintf("%x", hf.Sum(nil))
 }
 

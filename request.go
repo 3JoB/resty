@@ -16,6 +16,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/3JoB/unsafeConvert"
 	"github.com/goccy/go-json"
 	"github.com/goccy/go-reflect"
 )
@@ -941,7 +942,7 @@ func (r *Request) fmtBodyString(sl int64) (body string) {
 		prtBodyBytes, err = xml.MarshalIndent(&r.Body, "", "   ")
 	} else if b, ok := r.Body.(string); ok {
 		if IsJSONType(contentType) {
-			bodyBytes := []byte(b)
+			bodyBytes := unsafeConvert.BytesReflect(b)
 			out := acquireBuffer()
 			defer releaseBuffer(out)
 			if err = json.Indent(out, bodyBytes, "", "   "); err == nil {
@@ -956,11 +957,11 @@ func (r *Request) fmtBodyString(sl int64) (body string) {
 	}
 
 	if prtBodyBytes != nil && err == nil {
-		body = string(prtBodyBytes)
+		body = unsafeConvert.StringReflect(prtBodyBytes)
 	}
 
 	if len(body) > 0 {
-		bodySize := int64(len([]byte(body)))
+		bodySize := int64(len(unsafeConvert.BytesReflect(body)))
 		if bodySize > sl {
 			body = fmt.Sprintf("***** REQUEST TOO LARGE (size - %d) *****", bodySize)
 		}

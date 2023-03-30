@@ -17,6 +17,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/3JoB/unsafeConvert"
 	"github.com/goccy/go-reflect"
 )
 
@@ -425,7 +426,7 @@ func handleFormData(c *Client, r *Request) {
 		}
 	}
 
-	r.bodyBuf = bytes.NewBuffer([]byte(formData.Encode()))
+	r.bodyBuf = bytes.NewBuffer(unsafeConvert.BytesReflect(formData.Encode()))
 	r.Header.Set(hdrContentTypeKey, formContentType)
 	r.isFormData = true
 }
@@ -451,7 +452,7 @@ func handleRequestBody(c *Client, r *Request) (err error) {
 	} else if b, ok := r.Body.([]byte); ok {
 		bodyBytes = b
 	} else if s, ok := r.Body.(string); ok {
-		bodyBytes = []byte(s)
+		bodyBytes = unsafeConvert.BytesReflect(s)
 	} else if IsJSONType(contentType) &&
 		(kind == reflect.Struct || kind == reflect.Map || kind == reflect.Slice) {
 		r.bodyBuf, err = jsonMarshal(c, r, r.Body)

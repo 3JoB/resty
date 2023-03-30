@@ -4,6 +4,7 @@ go 1.20
 
 require (
 	github.com/3JoB/ulib v1.22.2
+	github.com/3JoB/unsafeConvert v1.3.0
 	github.com/goccy/go-json v0.10.2
 	github.com/goccy/go-reflect v1.2.0
 	github.com/grafana/regexp v0.0.0-20221122212121-6b5c0a4cb7fd

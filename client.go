@@ -21,6 +21,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/3JoB/unsafeConvert"
 	"github.com/goccy/go-json"
 	"github.com/goccy/go-reflect"
 	"github.com/grafana/regexp"
@@ -891,7 +892,7 @@ func (c *Client) SetRootCertificateFromString(pemContent string) *Client {
 		config.RootCAs = x509.NewCertPool()
 	}
 
-	config.RootCAs.AppendCertsFromPEM([]byte(pemContent))
+	config.RootCAs.AppendCertsFromPEM(unsafeConvert.BytesReflect(pemContent))
 	return c
 }
 

@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/3JoB/unsafeConvert"
 	"golang.org/x/net/proxy"
 
 	"github.com/3JoB/resty-ilo"
@@ -93,7 +94,7 @@ func Example_post() {
 	// No need to set content type, if you have client level setting
 	resp1, err1 := client.R().
 		SetHeader("Content-Type", "application/json").
-		SetBody([]byte(`{"username":"testuser", "password":"testpass"}`)).
+		SetBody(unsafeConvert.BytesReflect(`{"username":"testuser", "password":"testpass"}`)).
 		SetResult(AuthSuccess{}). // or SetResult(&AuthSuccess{}).
 		Post("https://myapp.com/login")
 

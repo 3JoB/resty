@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/3JoB/unsafeConvert"
 	"github.com/goccy/go-json"
 )
 
@@ -36,6 +37,21 @@ func (r *Response) Body() []byte {
 		return []byte{}
 	}
 	return r.body
+}
+
+// Bind the data in the body to the structure.
+func (r *Response) Bind(v any) error {
+	return json.Unmarshal(r.Body(), v)
+}
+
+// Example:
+//
+//	Raw: 200
+//	fmt.Println(r.IsStatusCode(444))
+//
+//	Output: false
+func (r *Response) IsStatusCode(a int) bool {
+	return a == r.StatusCode()
 }
 
 // Status method returns the HTTP status string for the executed request.
@@ -97,7 +113,7 @@ func (r *Response) String() string {
 	if r.body == nil {
 		return ""
 	}
-	return strings.TrimSpace(string(r.body))
+	return strings.TrimSpace(unsafeConvert.StringReflect(r.body))
 }
 
 // Time method returns the time of HTTP response time that from request we sent and received a request.
