@@ -1,4 +1,4 @@
-module github.com/3JoB/resty
+module github.com/3JoB/resty-ilo
 
 go 1.20
 

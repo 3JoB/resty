@@ -66,7 +66,7 @@ var (
 	jsonCheck = regexp.MustCompile(`(?i:(application|text)/(json|.*\+json|json\-.*)(;|$))`)
 	xmlCheck  = regexp.MustCompile(`(?i:(application|text)/(xml|.*\+xml)(;|$))`)
 
-	hdrUserAgentValue = fmt.Sprintf("go-resty-ilo/%v (https://github.com/3JoB/resty)", Version)
+	hdrUserAgentValue = fmt.Sprintf("go-resty-ilo/%v (https://github.com/3JoB/resty-ilo)", Version)
 	bufPool           = &sync.Pool{New: func() any { return &bytes.Buffer{} }}
 )
 
