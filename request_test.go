@@ -292,7 +292,7 @@ func TestPostJSONMapSuccess(t *testing.T) {
 	c.SetDebug(false)
 
 	resp, err := c.R().
-		SetBody(map[string]interface{}{"username": "testuser", "password": "testpass"}).
+		SetBody(map[string]any{"username": "testuser", "password": "testpass"}).
 		SetResult(AuthSuccess{}).
 		Post(ts.URL + "/login")
 
@@ -309,7 +309,7 @@ func TestPostJSONMapInvalidResponseJson(t *testing.T) {
 	defer ts.Close()
 
 	resp, err := dclr().
-		SetBody(map[string]interface{}{"username": "testuser", "password": "invalidjson"}).
+		SetBody(map[string]any{"username": "testuser", "password": "invalidjson"}).
 		SetResult(&AuthSuccess{}).
 		Post(ts.URL + "/login")
 
@@ -365,7 +365,7 @@ func TestForceContentTypeForGH276andGH240(t *testing.T) {
 	}))
 
 	resp, err := c.R().
-		SetBody(map[string]interface{}{"username": "testuser", "password": "testpass"}).
+		SetBody(map[string]any{"username": "testuser", "password": "testpass"}).
 		SetResult(AuthSuccess{}).
 		ForceContentType("application/json").
 		Post(ts.URL + "/login-json-html")
@@ -524,7 +524,7 @@ func TestPostXMLMapNotSupported(t *testing.T) {
 
 	_, err := dclr().
 		SetHeader(hdrContentTypeKey, "application/xml").
-		SetBody(map[string]interface{}{"Username": "testuser", "Password": "testpass"}).
+		SetBody(map[string]any{"Username": "testuser", "Password": "testpass"}).
 		Post(ts.URL + "/login")
 
 	assertEqual(t, "unsupported 'Body' type/value", err.Error())
@@ -1348,13 +1348,13 @@ func TestDetectContentTypeForPointerWithSliceMap(t *testing.T) {
 	ts := createPostServer(t)
 	defer ts.Close()
 
-	usersmap := map[string]interface{}{
+	usersmap := map[string]any{
 		"user1": ExampleUser{FirstName: "firstname1", LastName: "lastname1", ZipCode: "10001"},
 		"user2": &ExampleUser{FirstName: "firstname2", LastName: "lastname3", ZipCode: "10002"},
 		"user3": ExampleUser{FirstName: "firstname3", LastName: "lastname3", ZipCode: "10003"},
 	}
 
-	var users []map[string]interface{}
+	var users []map[string]any
 	users = append(users, usersmap)
 
 	resp, err := dclr().
@@ -1558,7 +1558,7 @@ func TestSRV(t *testing.T) {
 		SetScheme("http")
 
 	r := c.R().
-		SetSRV(&SRVRecord{"xmpp-server", "google.com"})
+		SetSRV(&SRVRecord{Service: "xmpp-server", Domain: "google.com"})
 
 	assertEqual(t, "xmpp-server", r.SRV.Service)
 	assertEqual(t, "google.com", r.SRV.Domain)
@@ -1573,7 +1573,7 @@ func TestSRV(t *testing.T) {
 
 func TestSRVInvalidService(t *testing.T) {
 	_, err := dc().R().
-		SetSRV(&SRVRecord{"nonexistantservice", "sampledomain"}).
+		SetSRV(&SRVRecord{Service: "nonexistantservice", Domain: "sampledomain"}).
 		Get("/")
 
 	assertNotNil(t, err)

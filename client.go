@@ -9,7 +9,6 @@ import (
 	"compress/gzip"
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/json"
 	"encoding/xml"
 	"errors"
 	"fmt"
@@ -18,11 +17,13 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"reflect"
-	"regexp"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/goccy/go-json"
+	"github.com/goccy/go-reflect"
+	"github.com/grafana/regexp"
 )
 
 const (
@@ -65,11 +66,14 @@ var (
 	jsonCheck = regexp.MustCompile(`(?i:(application|text)/(json|.*\+json|json\-.*)(;|$))`)
 	xmlCheck  = regexp.MustCompile(`(?i:(application|text)/(xml|.*\+xml)(;|$))`)
 
-	hdrUserAgentValue = "go-resty/" + Version + " (https://github.com/go-resty/resty)"
-	bufPool           = &sync.Pool{New: func() interface{} { return &bytes.Buffer{} }}
+	hdrUserAgentValue = fmt.Sprintf("go-resty-ilo/%v (https://github.com/3JoB/resty)", Version)
+	bufPool           = &sync.Pool{New: func() any { return &bytes.Buffer{} }}
 )
 
 type (
+	// RequestDumpFunction is used for dump on request level instead on whole client level
+	RequestDumpFunction func(r *Request, dump string)
+
 	// RequestMiddleware type is for request middleware, called before a request is sent
 	RequestMiddleware func(*Client, *Request) error
 
@@ -119,10 +123,10 @@ type Client struct {
 	RetryHooks            []OnRetryFunc
 	RetryAfter            RetryAfterFunc
 	RetryResetReaders     bool
-	JSONMarshal           func(v interface{}) ([]byte, error)
-	JSONUnmarshal         func(data []byte, v interface{}) error
-	XMLMarshal            func(v interface{}) ([]byte, error)
-	XMLUnmarshal          func(data []byte, v interface{}) error
+	JSONMarshal           func(v any) ([]byte, error)
+	JSONUnmarshal         func(data []byte, v any) error
+	XMLMarshal            func(v any) ([]byte, error)
+	XMLUnmarshal          func(data []byte, v any) error
 
 	// HeaderAuthorizationKey is used to set/access Request Authorization header
 	// value when `SetAuthToken` option is used.
@@ -158,9 +162,9 @@ type User struct {
 	Username, Password string
 }
 
-//‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+// ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 // Client methods
-//___________________________________
+// ___________________________________
 
 // SetHostURL method is to set Host URL in the client instance. It will be used with request
 // raised from this client with relative URL
@@ -417,7 +421,7 @@ func (c *Client) SetDigestAuth(username, password string) *Client {
 	oldTransport := c.httpClient.Transport
 	c.OnBeforeRequest(func(c *Client, _ *Request) error {
 		c.httpClient.Transport = &digestTransport{
-			digestCredentials: digestCredentials{username, password},
+			digestCredentials: digestCredentials{username: username, password: password},
 			transport:         oldTransport,
 		}
 		return nil
@@ -648,7 +652,7 @@ func (c *Client) SetTimeout(timeout time.Duration) *Client {
 //	client.SetError(&Error{})
 //	// OR
 //	client.SetError(Error{})
-func (c *Client) SetError(err interface{}) *Client {
+func (c *Client) SetError(err any) *Client {
 	c.Error = typeOf(err)
 	return c
 }
@@ -660,7 +664,7 @@ func (c *Client) SetError(err interface{}) *Client {
 //
 //	// Need multiple redirect policies together
 //	client.SetRedirectPolicy(FlexibleRedirectPolicy(20), DomainCheckRedirectPolicy("host1.com", "host2.net"))
-func (c *Client) SetRedirectPolicy(policies ...interface{}) *Client {
+func (c *Client) SetRedirectPolicy(policies ...any) *Client {
 	for _, p := range policies {
 		if _, ok := p.(RedirectPolicy); !ok {
 			c.log.Errorf("%v does not implement resty.RedirectPolicy (missing Apply method)",
@@ -714,28 +718,28 @@ func (c *Client) SetRetryAfter(callback RetryAfterFunc) *Client {
 
 // SetJSONMarshaler method sets the JSON marshaler function to marshal the request body.
 // By default, Resty uses `encoding/json` package to marshal the request body.
-func (c *Client) SetJSONMarshaler(marshaler func(v interface{}) ([]byte, error)) *Client {
+func (c *Client) SetJSONMarshaler(marshaler func(v any) ([]byte, error)) *Client {
 	c.JSONMarshal = marshaler
 	return c
 }
 
 // SetJSONUnmarshaler method sets the JSON unmarshaler function to unmarshal the response body.
 // By default, Resty uses `encoding/json` package to unmarshal the response body.
-func (c *Client) SetJSONUnmarshaler(unmarshaler func(data []byte, v interface{}) error) *Client {
+func (c *Client) SetJSONUnmarshaler(unmarshaler func(data []byte, v any) error) *Client {
 	c.JSONUnmarshal = unmarshaler
 	return c
 }
 
 // SetXMLMarshaler method sets the XML marshaler function to marshal the request body.
 // By default, Resty uses `encoding/xml` package to marshal the request body.
-func (c *Client) SetXMLMarshaler(marshaler func(v interface{}) ([]byte, error)) *Client {
+func (c *Client) SetXMLMarshaler(marshaler func(v any) ([]byte, error)) *Client {
 	c.XMLMarshal = marshaler
 	return c
 }
 
 // SetXMLUnmarshaler method sets the XML unmarshaler function to unmarshal the response body.
 // By default, Resty uses `encoding/xml` package to unmarshal the response body.
-func (c *Client) SetXMLUnmarshaler(unmarshaler func(data []byte, v interface{}) error) *Client {
+func (c *Client) SetXMLUnmarshaler(unmarshaler func(data []byte, v any) error) *Client {
 	c.XMLUnmarshal = unmarshaler
 	return c
 }
@@ -1039,9 +1043,9 @@ func (c *Client) GetClient() *http.Client {
 	return c.httpClient
 }
 
-//‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+// ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 // Client Unexported methods
-//_______________________________________________________________________
+// _______________________________________________________________________
 
 // Executes method executes the given `Request` object and returns response
 // error.
@@ -1212,9 +1216,9 @@ func (c *Client) onInvalidHooks(req *Request, err error) {
 	}
 }
 
-//‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+// ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 // File struct and its methods
-//_______________________________________________________________________
+// _______________________________________________________________________
 
 // File struct represent file information for multipart request
 type File struct {
@@ -1228,9 +1232,9 @@ func (f *File) String() string {
 	return fmt.Sprintf("ParamName: %v; FileName: %v", f.ParamName, f.Name)
 }
 
-//‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+// ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 // MultipartField struct
-//_______________________________________________________________________
+// _______________________________________________________________________
 
 // MultipartField struct represent custom data part for multipart request
 type MultipartField struct {
@@ -1240,10 +1244,9 @@ type MultipartField struct {
 	io.Reader
 }
 
-//‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+// ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 // Unexported package methods
-//_______________________________________________________________________
-
+// _______________________________________________________________________
 func createClient(hc *http.Client) *Client {
 	if hc.Transport == nil {
 		hc.Transport = createTransport(nil)

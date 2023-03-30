@@ -79,10 +79,9 @@ func DomainCheckRedirectPolicy(hostnames ...string) RedirectPolicy {
 	return fn
 }
 
-//‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+// ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 // Package Unexported methods
-//_______________________________________________________________________
-
+// _______________________________________________________________________
 func getHostname(host string) (hostname string) {
 	if strings.Index(host, ":") > 0 {
 		host, _, _ = net.SplitHostPort(host)

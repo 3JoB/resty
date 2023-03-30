@@ -15,32 +15,33 @@ import (
 
 	"golang.org/x/net/proxy"
 
-	"github.com/go-resty/resty/v2"
+	"github.com/3JoB/resty"
 )
 
 type DropboxError struct {
 	Error string
 }
+
 type AuthSuccess struct {
 	/* variables */
 }
+
 type AuthError struct {
 	/* variables */
 }
+
 type Article struct {
 	Title   string
 	Content string
 	Author  string
 	Tags    []string
 }
+
 type Error struct {
 	/* variables */
 }
 
-//
 // Package Level examples
-//
-
 func Example_get() {
 	// Create a resty client
 	client := resty.New()
@@ -109,7 +110,7 @@ func Example_post() {
 
 	// POST Map, default is JSON content type. No need to set one
 	resp3, err3 := client.R().
-		SetBody(map[string]interface{}{"username": "testuser", "password": "testpass"}).
+		SetBody(map[string]any{"username": "testuser", "password": "testpass"}).
 		SetResult(&AuthSuccess{}). // or SetResult(AuthSuccess{}).
 		SetError(&AuthError{}).    // or SetError(AuthError{}).
 		Post("https://myapp.com/login")
@@ -179,10 +180,7 @@ func Example_customRootCertificate() {
 	client.SetRootCertificate("/path/to/root/pemFile.pem")
 }
 
-//
 // top level method examples
-//
-
 func ExampleNew() {
 	// Creating client1
 	client1 := resty.New()
@@ -195,10 +193,7 @@ func ExampleNew() {
 	fmt.Println(resp2, err2)
 }
 
-//
 // Client object methods
-//
-
 func ExampleClient_SetCertificates() {
 	// Parsing public/private key pair from a pair of files. The files must contain PEM encoded data.
 	cert, err := tls.LoadX509KeyPair("certs/client.pem", "certs/client.key")
@@ -212,10 +207,7 @@ func ExampleClient_SetCertificates() {
 	client.SetCertificates(cert)
 }
 
-//
 // Resty Socks5 Proxy request
-//
-
 func Example_socks5Proxy() {
 	// create a dialer
 	dialer, err := proxy.SOCKS5("tcp", "127.0.0.1:9150", nil, proxy.Direct)

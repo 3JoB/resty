@@ -7,16 +7,16 @@ package resty
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
-	"reflect"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/goccy/go-json"
+	"github.com/goccy/go-reflect"
 )
 
 func TestBackoffSuccess(t *testing.T) {
@@ -597,11 +597,11 @@ func TestClientRetryPost(t *testing.T) {
 	ts := createPostServer(t)
 	defer ts.Close()
 
-	usersmap := map[string]interface{}{
-		"user1": map[string]interface{}{"FirstName": "firstname1", "LastName": "lastname1", "ZipCode": "10001"},
+	usersmap := map[string]any{
+		"user1": map[string]any{"FirstName": "firstname1", "LastName": "lastname1", "ZipCode": "10001"},
 	}
 
-	var users []map[string]interface{}
+	var users []map[string]any
 	users = append(users, usersmap)
 
 	c := dc()
@@ -617,7 +617,7 @@ func TestClientRetryPost(t *testing.T) {
 	if resp != nil {
 		if resp.StatusCode() == http.StatusInternalServerError {
 			t.Logf("Got response body: %s", string(resp.body))
-			var usersResponse []map[string]interface{}
+			var usersResponse []map[string]any
 			err := json.Unmarshal(resp.body, &usersResponse)
 			assertError(t, err)
 
@@ -751,7 +751,7 @@ func filler(*Response, error) bool {
 	return false
 }
 
-var errSeekFailure = fmt.Errorf("failing seek test")
+var errSeekFailure = errors.New("failing seek test")
 
 type failingSeeker struct {
 	reader *bytes.Reader
@@ -774,7 +774,7 @@ func TestResetMultipartReaderSeekStartError(t *testing.T) {
 	defer ts.Close()
 
 	testSeeker := &failingSeeker{
-		bytes.NewReader([]byte("test")),
+		reader: bytes.NewReader([]byte("test")),
 	}
 
 	c := dc().

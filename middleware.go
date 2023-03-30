@@ -14,27 +14,27 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
-	"reflect"
 	"strings"
 	"time"
+
+	"github.com/goccy/go-reflect"
 )
 
 const debugRequestLogKey = "__restyDebugRequestLog"
 
-//‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+// ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 // Request Middleware(s)
-//_______________________________________________________________________
-
+// _______________________________________________________________________
 func parseRequestURL(c *Client, r *Request) error {
 	// GitHub #103 Path Params
 	if len(r.PathParams) > 0 {
 		for p, v := range r.PathParams {
-			r.URL = strings.Replace(r.URL, "{"+p+"}", url.PathEscape(v), -1)
+			r.URL = strings.ReplaceAll(r.URL, "{"+p+"}", url.PathEscape(v))
 		}
 	}
 	if len(c.PathParams) > 0 {
 		for p, v := range c.PathParams {
-			r.URL = strings.Replace(r.URL, "{"+p+"}", url.PathEscape(v), -1)
+			r.URL = strings.ReplaceAll(r.URL, "{"+p+"}", url.PathEscape(v))
 		}
 	}
 
@@ -259,7 +259,7 @@ func addCredentials(c *Client, r *Request) error {
 }
 
 func requestLogger(c *Client, r *Request) error {
-	if c.Debug {
+	if c.Debug || r.requestDumpFunction != nil {
 		rr := r.RawRequest
 		rl := &RequestLog{Header: copyHeaders(rr.Header), Body: r.fmtBodyString(c.debugBodySizeLimit)}
 		if c.requestLog != nil {
@@ -284,12 +284,11 @@ func requestLogger(c *Client, r *Request) error {
 	return nil
 }
 
-//‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+// ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 // Response Middleware(s)
-//_______________________________________________________________________
-
+// _______________________________________________________________________
 func responseLogger(c *Client, res *Response) error {
-	if c.Debug {
+	if c.Debug || res.Request.requestDumpFunction != nil {
 		rl := &ResponseLog{Header: copyHeaders(res.Header()), Body: res.fmtBodyString(c.debugBodySizeLimit)}
 		if c.responseLog != nil {
 			if err := c.responseLog(rl); err != nil {
@@ -312,7 +311,12 @@ func responseLogger(c *Client, res *Response) error {
 		}
 		debugLog += "==============================================================================\n"
 
-		res.Request.log.Debugf("%s", debugLog)
+		if res.Request.requestDumpFunction != nil {
+			res.Request.requestDumpFunction(res.Request, debugLog)
+		}
+		if c.Debug {
+			res.Request.log.Debugf("%s", debugLog)
+		}
 	}
 
 	return nil

@@ -15,12 +15,13 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
-	"reflect"
 	"strconv"
 	"strings"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/goccy/go-reflect"
 )
 
 func TestClientBasicAuth(t *testing.T) {
@@ -79,7 +80,6 @@ func TestClientAuthScheme(t *testing.T) {
 	resp2, err2 := c.R().Get("/profile")
 	assertError(t, err2)
 	assertEqual(t, http.StatusOK, resp2.StatusCode())
-
 }
 
 func TestClientDigestAuth(t *testing.T) {
@@ -513,7 +513,7 @@ func TestClientPreRequestHook(t *testing.T) {
 
 	// Regular bodybuf use case
 	resp, _ := client.R().
-		SetBody(map[string]interface{}{"username": "testuser", "password": "testpass"}).
+		SetBody(map[string]any{"username": "testuser", "password": "testpass"}).
 		Post(ts.URL + "/login")
 	assertEqual(t, http.StatusOK, resp.StatusCode())
 	assertEqual(t, `{ "id": "success", "message": "login successful" }`, resp.String())
@@ -584,7 +584,7 @@ func TestClientNewRequest(t *testing.T) {
 }
 
 func TestClientSetJSONMarshaler(t *testing.T) {
-	m := func(v interface{}) ([]byte, error) { return nil, nil }
+	m := func(v any) ([]byte, error) { return nil, nil }
 	c := New().SetJSONMarshaler(m)
 	p1 := fmt.Sprintf("%p", c.JSONMarshal)
 	p2 := fmt.Sprintf("%p", m)
@@ -592,7 +592,7 @@ func TestClientSetJSONMarshaler(t *testing.T) {
 }
 
 func TestClientSetJSONUnmarshaler(t *testing.T) {
-	m := func([]byte, interface{}) error { return nil }
+	m := func([]byte, any) error { return nil }
 	c := New().SetJSONUnmarshaler(m)
 	p1 := fmt.Sprintf("%p", c.JSONUnmarshal)
 	p2 := fmt.Sprintf("%p", m)
@@ -600,7 +600,7 @@ func TestClientSetJSONUnmarshaler(t *testing.T) {
 }
 
 func TestClientSetXMLMarshaler(t *testing.T) {
-	m := func(v interface{}) ([]byte, error) { return nil, nil }
+	m := func(v any) ([]byte, error) { return nil, nil }
 	c := New().SetXMLMarshaler(m)
 	p1 := fmt.Sprintf("%p", c.XMLMarshal)
 	p2 := fmt.Sprintf("%p", m)
@@ -608,7 +608,7 @@ func TestClientSetXMLMarshaler(t *testing.T) {
 }
 
 func TestClientSetXMLUnmarshaler(t *testing.T) {
-	m := func([]byte, interface{}) error { return nil }
+	m := func([]byte, any) error { return nil }
 	c := New().SetXMLUnmarshaler(m)
 	p1 := fmt.Sprintf("%p", c.XMLUnmarshal)
 	p2 := fmt.Sprintf("%p", m)
@@ -627,17 +627,17 @@ func TestDebugBodySizeLimit(t *testing.T) {
 
 	testcases := []struct{ url, want string }{
 		// Text, does not exceed limit.
-		{ts.URL, "TestGet: text response"},
+		{url: ts.URL, want: "TestGet: text response"},
 		// Empty response.
-		{ts.URL + "/no-content", "***** NO CONTENT *****"},
+		{url: ts.URL + "/no-content", want: "***** NO CONTENT *****"},
 		// JSON, does not exceed limit.
-		{ts.URL + "/json", "{\n   \"TestGet\": \"JSON response\"\n}"},
+		{url: ts.URL + "/json", want: "{\n   \"TestGet\": \"JSON response\"\n}"},
 		// Invalid JSON, does not exceed limit.
-		{ts.URL + "/json-invalid", "TestGet: Invalid JSON"},
+		{url: ts.URL + "/json-invalid", want: "TestGet: Invalid JSON"},
 		// Text, exceeds limit.
-		{ts.URL + "/long-text", "RESPONSE TOO LARGE"},
+		{url: ts.URL + "/long-text", want: "RESPONSE TOO LARGE"},
 		// JSON, exceeds limit.
-		{ts.URL + "/long-json", "RESPONSE TOO LARGE"},
+		{url: ts.URL + "/long-json", want: "RESPONSE TOO LARGE"},
 	}
 
 	for _, tc := range testcases {
@@ -666,9 +666,9 @@ func TestAutoGzip(t *testing.T) {
 
 	c := New()
 	testcases := []struct{ url, want string }{
-		{ts.URL + "/gzip-test", "This is Gzip response testing"},
-		{ts.URL + "/gzip-test-gziped-empty-body", ""},
-		{ts.URL + "/gzip-test-no-gziped-body", ""},
+		{url: ts.URL + "/gzip-test", want: "This is Gzip response testing"},
+		{url: ts.URL + "/gzip-test-gziped-empty-body", want: ""},
+		{url: ts.URL + "/gzip-test-no-gziped-body", want: ""},
 	}
 	for _, tc := range testcases {
 		resp, err := c.R().
@@ -776,7 +776,7 @@ func TestClientOnResponseError(t *testing.T) {
 			name: "before_request_error",
 			setup: func(client *Client) {
 				client.OnBeforeRequest(func(client *Client, request *Request) error {
-					return fmt.Errorf("before request")
+					return errors.New("before request")
 				})
 			},
 			isError: true,
@@ -785,7 +785,7 @@ func TestClientOnResponseError(t *testing.T) {
 			name: "before_request_error_retry",
 			setup: func(client *Client) {
 				client.SetRetryCount(3).OnBeforeRequest(func(client *Client, request *Request) error {
-					return fmt.Errorf("before request")
+					return errors.New("before request")
 				})
 			},
 			isError: true,
@@ -794,7 +794,7 @@ func TestClientOnResponseError(t *testing.T) {
 			name: "after_response_error",
 			setup: func(client *Client) {
 				client.OnAfterResponse(func(client *Client, response *Response) error {
-					return fmt.Errorf("after response")
+					return errors.New("after response")
 				})
 			},
 			isError:     true,
@@ -804,7 +804,7 @@ func TestClientOnResponseError(t *testing.T) {
 			name: "after_response_error_retry",
 			setup: func(client *Client) {
 				client.SetRetryCount(3).OnAfterResponse(func(client *Client, response *Response) error {
-					return fmt.Errorf("after response")
+					return errors.New("after response")
 				})
 			},
 			isError:     true,
@@ -814,7 +814,7 @@ func TestClientOnResponseError(t *testing.T) {
 			name: "panic with error",
 			setup: func(client *Client) {
 				client.OnBeforeRequest(func(client *Client, request *Request) error {
-					panic(fmt.Errorf("before request"))
+					panic(errors.New("before request"))
 				})
 			},
 			isError:     false,
@@ -960,7 +960,7 @@ func TestHostURLForGH318AndGH407(t *testing.T) {
 	t.Log("with leading `/` on request & with trailing `/` on host url")
 	c.SetHostURL(ts.URL + "/")
 	resp, err := c.R().
-		SetBody(map[string]interface{}{"username": "testuser", "password": "testpass"}).
+		SetBody(map[string]any{"username": "testuser", "password": "testpass"}).
 		Post("/login")
 	assertNil(t, err)
 	assertNotNil(t, resp)

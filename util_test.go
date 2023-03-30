@@ -15,28 +15,28 @@ func TestIsJSONType(t *testing.T) {
 		input  string
 		expect bool
 	}{
-		{"application/json", true},
-		{"application/xml+json", true},
-		{"application/vnd.foo+json", true},
+		{input: "application/json", expect: true},
+		{input: "application/xml+json", expect: true},
+		{input: "application/vnd.foo+json", expect: true},
 
-		{"application/json; charset=utf-8", true},
-		{"application/vnd.foo+json; charset=utf-8", true},
+		{input: "application/json; charset=utf-8", expect: true},
+		{input: "application/vnd.foo+json; charset=utf-8", expect: true},
 
-		{"text/json", true},
-		{"text/xml+json", true},
-		{"text/vnd.foo+json", true},
+		{input: "text/json", expect: true},
+		{input: "text/xml+json", expect: true},
+		{input: "text/vnd.foo+json", expect: true},
 
-		{"application/foo-json", false},
-		{"application/foo.json", false},
-		{"application/vnd.foo-json", false},
-		{"application/vnd.foo.json", false},
-		{"application/json+xml", false},
+		{input: "application/foo-json", expect: false},
+		{input: "application/foo.json", expect: false},
+		{input: "application/vnd.foo-json", expect: false},
+		{input: "application/vnd.foo.json", expect: false},
+		{input: "application/json+xml", expect: false},
 
-		{"text/foo-json", false},
-		{"text/foo.json", false},
-		{"text/vnd.foo-json", false},
-		{"text/vnd.foo.json", false},
-		{"text/json+xml", false},
+		{input: "text/foo-json", expect: false},
+		{input: "text/foo.json", expect: false},
+		{input: "text/vnd.foo-json", expect: false},
+		{input: "text/vnd.foo.json", expect: false},
+		{input: "text/json+xml", expect: false},
 	} {
 		result := IsJSONType(test.input)
 
@@ -51,28 +51,28 @@ func TestIsXMLType(t *testing.T) {
 		input  string
 		expect bool
 	}{
-		{"application/xml", true},
-		{"application/json+xml", true},
-		{"application/vnd.foo+xml", true},
+		{input: "application/xml", expect: true},
+		{input: "application/json+xml", expect: true},
+		{input: "application/vnd.foo+xml", expect: true},
 
-		{"application/xml; charset=utf-8", true},
-		{"application/vnd.foo+xml; charset=utf-8", true},
+		{input: "application/xml; charset=utf-8", expect: true},
+		{input: "application/vnd.foo+xml; charset=utf-8", expect: true},
 
-		{"text/xml", true},
-		{"text/json+xml", true},
-		{"text/vnd.foo+xml", true},
+		{input: "text/xml", expect: true},
+		{input: "text/json+xml", expect: true},
+		{input: "text/vnd.foo+xml", expect: true},
 
-		{"application/foo-xml", false},
-		{"application/foo.xml", false},
-		{"application/vnd.foo-xml", false},
-		{"application/vnd.foo.xml", false},
-		{"application/xml+json", false},
+		{input: "application/foo-xml", expect: false},
+		{input: "application/foo.xml", expect: false},
+		{input: "application/vnd.foo-xml", expect: false},
+		{input: "application/vnd.foo.xml", expect: false},
+		{input: "application/xml+json", expect: false},
 
-		{"text/foo-xml", false},
-		{"text/foo.xml", false},
-		{"text/vnd.foo-xml", false},
-		{"text/vnd.foo.xml", false},
-		{"text/xml+json", false},
+		{input: "text/foo-xml", expect: false},
+		{input: "text/foo.xml", expect: false},
+		{input: "text/vnd.foo-xml", expect: false},
+		{input: "text/vnd.foo.xml", expect: false},
+		{input: "text/xml+json", expect: false},
 	} {
 		result := IsXMLType(test.input)
 

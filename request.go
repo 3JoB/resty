@@ -7,21 +7,22 @@ package resty
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"encoding/xml"
 	"fmt"
 	"io"
 	"net"
 	"net/http"
 	"net/url"
-	"reflect"
 	"strings"
 	"time"
+
+	"github.com/goccy/go-json"
+	"github.com/goccy/go-reflect"
 )
 
-//‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+// ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 // Request struct and methods
-//_______________________________________________________________________
+// _______________________________________________________________________
 
 // Request struct is used to compose and fire individual request from
 // resty client. Request provides an options to override client level
@@ -36,9 +37,9 @@ type Request struct {
 	PathParams map[string]string
 	Header     http.Header
 	Time       time.Time
-	Body       interface{}
-	Result     interface{}
-	Error      interface{}
+	Body       any
+	Result     any
+	Error      any
 	RawRequest *http.Request
 	SRV        *SRVRecord
 	UserInfo   *User
@@ -61,7 +62,7 @@ type Request struct {
 	fallbackContentType string
 	forceContentType    string
 	ctx                 context.Context
-	values              map[string]interface{}
+	values              map[string]any
 	client              *Client
 	bodyBuf             *bytes.Buffer
 	clientTrace         *clientTrace
@@ -69,6 +70,7 @@ type Request struct {
 	multipartFiles      []*File
 	multipartFields     []*MultipartField
 	retryConditions     []RetryConditionFunc
+	requestDumpFunction RequestDumpFunction
 }
 
 // Context method returns the Context if its already set in request
@@ -307,7 +309,7 @@ func (r *Request) SetFormDataFromValues(data url.Values) *Request {
 //
 //	client.R().
 //		SetBody([]byte("This is my raw request, sent as-is"))
-func (r *Request) SetBody(body interface{}) *Request {
+func (r *Request) SetBody(body any) *Request {
 	r.Body = body
 	return r
 }
@@ -324,7 +326,7 @@ func (r *Request) SetBody(body interface{}) *Request {
 // Accessing a result value from response instance.
 //
 //	response.Result().(*AuthToken)
-func (r *Request) SetResult(res interface{}) *Request {
+func (r *Request) SetResult(res any) *Request {
 	if res != nil {
 		r.Result = getPointer(res)
 	}
@@ -343,7 +345,7 @@ func (r *Request) SetResult(res interface{}) *Request {
 // Accessing a error value from response instance.
 //
 //	response.Error().(*AuthError)
-func (r *Request) SetError(err interface{}) *Request {
+func (r *Request) SetError(err any) *Request {
 	r.Error = getPointer(err)
 	return r
 }
@@ -518,7 +520,7 @@ func (r *Request) SetDigestAuth(username, password string) *Request {
 	oldTransport := r.client.httpClient.Transport
 	r.client.OnBeforeRequest(func(c *Client, _ *Request) error {
 		c.httpClient.Transport = &digestTransport{
-			digestCredentials: digestCredentials{username, password},
+			digestCredentials: digestCredentials{username: username, password: password},
 			transport:         oldTransport,
 		}
 		return nil
@@ -689,9 +691,9 @@ func (r *Request) AddRetryCondition(condition RetryConditionFunc) *Request {
 	return r
 }
 
-//‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+// ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 // HTTP request tracing
-//_______________________________________________________________________
+// _______________________________________________________________________
 
 // EnableTrace method enables trace for the current request
 // using `httptrace.ClientTrace` and provides insights.
@@ -763,9 +765,9 @@ func (r *Request) TraceInfo() TraceInfo {
 	return ti
 }
 
-//‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+// ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 // HTTP verb method starts here
-//_______________________________________________________________________
+// _______________________________________________________________________
 
 // Get method does GET HTTP request. It's defined in section 4.3.1 of RFC7231.
 func (r *Request) Get(url string) (*Response, error) {
@@ -883,9 +885,14 @@ func (r *Request) Execute(method, url string) (*Response, error) {
 	return resp, unwrapNoRetryErr(err)
 }
 
-//‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+// SetOnRequestDump set the callback to dump request log regardless of client logging
+func (r *Request) SetOnRequestDump(callback RequestDumpFunction) {
+	r.requestDumpFunction = callback
+}
+
+// ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 // SRVRecord struct
-//_______________________________________________________________________
+// _______________________________________________________________________
 
 // SRVRecord struct holds the data to query the SRV record for the
 // following service.
@@ -894,10 +901,9 @@ type SRVRecord struct {
 	Domain  string
 }
 
-//‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+// ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 // Request Unexported methods
-//_______________________________________________________________________
-
+// _______________________________________________________________________
 func (r *Request) fmtBodyString(sl int64) (body string) {
 	body = "***** NO CONTENT *****"
 	if !isPayloadSupported(r.Method, r.client.AllowGetMethodPayload) {
@@ -977,11 +983,11 @@ func (r *Request) selectAddr(addrs []*net.SRV, path string, attempt int) string 
 
 func (r *Request) initValuesMap() {
 	if r.values == nil {
-		r.values = make(map[string]interface{})
+		r.values = make(map[string]any)
 	}
 }
 
-var noescapeJSONMarshal = func(v interface{}) (*bytes.Buffer, error) {
+var noescapeJSONMarshal = func(v any) (*bytes.Buffer, error) {
 	buf := acquireBuffer()
 	encoder := json.NewEncoder(buf)
 	encoder.SetEscapeHTML(false)
@@ -993,7 +999,7 @@ var noescapeJSONMarshal = func(v interface{}) (*bytes.Buffer, error) {
 	return buf, nil
 }
 
-var noescapeJSONMarshalIndent = func(v interface{}) ([]byte, error) {
+var noescapeJSONMarshalIndent = func(v any) ([]byte, error) {
 	buf := acquireBuffer()
 	defer releaseBuffer(buf)
 

@@ -8,23 +8,24 @@ package resty
 
 import (
 	"crypto/md5"
-	"crypto/rand"
 	"crypto/sha256"
 	"crypto/sha512"
-	"errors"
 	"fmt"
 	"hash"
 	"io"
 	"net/http"
 	"strings"
+
+	errs "github.com/3JoB/ulib/err"
+	"lukechampine.com/frand"
 )
 
 var (
-	ErrDigestBadChallenge    = errors.New("digest: challenge is bad")
-	ErrDigestCharset         = errors.New("digest: unsupported charset")
-	ErrDigestAlgNotSupported = errors.New("digest: algorithm is not supported")
-	ErrDigestQopNotSupported = errors.New("digest: no supported qop in list")
-	ErrDigestNoQop           = errors.New("digest: qop must be specified")
+	ErrDigestBadChallenge    error = &errs.Err{Op: "digest", Err: "challenge is bad"}
+	ErrDigestCharset         error = &errs.Err{Op: "digest", Err: "unsupported charset"}
+	ErrDigestAlgNotSupported error = &errs.Err{Op: "digest", Err: "algorithm is not supported"}
+	ErrDigestQopNotSupported error = &errs.Err{Op: "digest", Err: "no supported qop in list"}
+	ErrDigestNoQop           error = &errs.Err{Op: "digest", Err: "qop must be specified"}
 )
 
 var hashFuncs = map[string]func() hash.Hash{
@@ -247,7 +248,7 @@ func (c *credentials) resp() (string, error) {
 	c.nc++
 
 	b := make([]byte, 16)
-	_, err := io.ReadFull(rand.Reader, b)
+	_, err := io.ReadFull(frand.Reader, b)
 	if err != nil {
 		return "", err
 	}

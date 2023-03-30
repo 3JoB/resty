@@ -8,9 +8,10 @@ import (
 	"context"
 	"io"
 	"math"
-	"math/rand"
 	"sync"
 	"time"
+
+	"pgregory.net/rand"
 )
 
 const (
@@ -234,9 +235,7 @@ func randDuration(center time.Duration) time.Duration {
 }
 
 func newRnd() *rand.Rand {
-	var seed = time.Now().UnixNano()
-	var src = rand.NewSource(seed)
-	return rand.New(src)
+	return rand.New()
 }
 
 func resetFileReaders(files []*File) error {

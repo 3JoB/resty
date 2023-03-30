@@ -5,17 +5,18 @@
 package resty
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/goccy/go-json"
 )
 
-//‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+// ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 // Response struct and methods
-//_______________________________________________________________________
+// _______________________________________________________________________
 
 // Response struct holds response values of executed request.
 type Response struct {
@@ -66,12 +67,12 @@ func (r *Response) Proto() string {
 }
 
 // Result method returns the response value as an object if it has one
-func (r *Response) Result() interface{} {
+func (r *Response) Result() any {
 	return r.Request.Result
 }
 
 // Error method returns the error object if it has one
-func (r *Response) Error() interface{} {
+func (r *Response) Error() any {
 	return r.Request.Error
 }
 
@@ -144,10 +145,9 @@ func (r *Response) IsError() bool {
 	return r.StatusCode() > 399
 }
 
-//‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+// ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 // Response Unexported methods
-//_______________________________________________________________________
-
+// _______________________________________________________________________
 func (r *Response) setReceivedAt() {
 	r.receivedAt = time.Now()
 	if r.Request.clientTrace != nil {
