@@ -3,7 +3,7 @@ module github.com/3JoB/resty-ilo
 go 1.20
 
 require (
-	github.com/3JoB/ulib v1.23.0
+	github.com/3JoB/ulib v1.25.0
 	github.com/3JoB/unsafeConvert v1.3.0
 	github.com/goccy/go-json v0.10.2
 	github.com/goccy/go-reflect v1.2.0

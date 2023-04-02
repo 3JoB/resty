@@ -521,7 +521,7 @@ func getBodyCopy(r *Request) (*bytes.Buffer, error) {
 	// If r.bodyBuf present, return the copy
 	if r.bodyBuf != nil {
 		bodyCopy := acquireBuffer()
-		if _, err := io.Copy(bodyCopy, bytes.NewReader(r.bodyBuf.Bytes())); err != nil {
+		if _, err := io.Copy(bodyCopy, bytes.NewReader(unsafeConvert.BytesReflect(r.bodyBuf.String()))); err != nil {
 			// cannot use io.Copy(bodyCopy, r.bodyBuf) because io.Copy reset r.bodyBuf
 			return nil, err
 		}
