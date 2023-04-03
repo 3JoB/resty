@@ -86,15 +86,13 @@
 
 #### Supported Go Versions
 
-Recommended to use `go1.16` and above.
+Recommended to use `go1.20` and above.
 
 Initially Resty started supporting `go modules` since `v1.10.0` release.
 
 Starting Resty v2 and higher versions, it fully embraces [go modules](https://github.com/golang/go/wiki/Modules) package release. It requires a Go version capable of understanding `/vN` suffixed imports:
 
-- 1.9.7+
-- 1.10.3+
-- 1.11+
+- 1.20+
 
 
 ## It might be beneficial for your project :smile:
@@ -110,7 +108,7 @@ Resty author also published following projects for Go Community.
 
 ```bash
 # Go Modules
-require github.com/3JoB/resty-ilo v2.7.0
+require github.com/3JoB/resty-ilo v1.1.3
 ```
 
 ## Usage
