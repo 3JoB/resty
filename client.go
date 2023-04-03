@@ -15,13 +15,13 @@ import (
 	"fmt"
 	"io"
 	"math"
-	"net/http"
 	"net/url"
 	"os"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/3JoB/nhtp"
 	"github.com/3JoB/unsafeConvert"
 	"github.com/goccy/go-json"
 	"github.com/goccy/go-reflect"
@@ -440,20 +440,24 @@ func (c *Client) SetDigestAuth(username, password string) *Client {
 // Enable http3 support for this client
 //
 // Note: This operation will cover the Transport parameter.
+//
+// Warning: http3 is temporarily disabled due to switching to net/http which is a non-standard library
 func (c *Client) SetHttp3Enable() *Client {
-	c.httpClient.Transport = &http3.RoundTripper{}
+	// c.httpClient.Transport = &http3.RoundTripper{}
 	return c
 }
 
+// Warning: http3 is temporarily disabled due to switching to net/http which is a non-standard library
 func (c *Client) SetHttp3EnableWithDial(dial func(ctx context.Context, addr string, tlsCfg *tls.Config, cfg *quic.Config) (quic.EarlyConnection, error)) *Client {
-	c.httpClient.Transport = &http3.RoundTripper{
-		Dial: dial,
-	}
+	// c.httpClient.Transport = &http3.RoundTripper{
+	//	Dial: dial,
+	// }
 	return c
 }
 
+// Warning: http3 is temporarily disabled due to switching to net/http which is a non-standard library
 func (c *Client) SetHttp3Custom(r *http3.RoundTripper) *Client {
-	c.httpClient.Transport = r
+	// c.httpClient.Transport = r
 	return c
 }
 

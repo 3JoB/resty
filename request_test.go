@@ -11,7 +11,6 @@ import (
 	"errors"
 	"io"
 	"net"
-	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -20,6 +19,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/3JoB/nhtp"
 	"github.com/3JoB/unsafeConvert"
 )
 
@@ -1466,7 +1466,6 @@ func TestSetHeaderVerbatim(t *testing.T) {
 		SetHeaderVerbatim("header-lowercase", "value_lowercase").
 		SetHeader("header-lowercase", "value_standard")
 
-	//lint:ignore SA1008 valid one ignore this!
 	assertEqual(t, "value_lowercase", strings.Join(r.Header["header-lowercase"], ""))
 	assertEqual(t, "value_standard", r.Header.Get("Header-Lowercase"))
 }

@@ -1,9 +1,13 @@
+github.com/3JoB/nhtp v0.0.2 h1:Ln2n+/GgxRNGKYEND+g37uIROixmhgfCNYwgiUo/+v8=
+github.com/3JoB/nhtp v0.0.2/go.mod h1:99ZbZrm3uTFc/J46H3y7M5/t3XcPMZ7B7nC8K8O69Tg=
 github.com/3JoB/ulib v1.25.0 h1:wEnLDRZTeVoiLdnivB4m8AnEsFthlOBj89l8bFrgTI0=
 github.com/3JoB/ulib v1.25.0/go.mod h1:AJwwS1pJcYR2wzOLHQWvNc7f/K+KiNEdJlDwRmFCU8A=
 github.com/3JoB/unsafeConvert v1.3.0 h1:HxWedv9pqNZjzkjdvyPToxolN+kjF55lMbsBedhuKR0=
 github.com/3JoB/unsafeConvert v1.3.0/go.mod h1:eSOZxiCOcyEi0vBO56ULYtfXJEn4vafvkebEfI0pYoE=
 github.com/aead/chacha20 v0.0.0-20180709150244-8b13a72661da h1:KjTM2ks9d14ZYCvmHS9iAKVt9AyzRSqNU1qabPih5BY=
 github.com/aead/chacha20 v0.0.0-20180709150244-8b13a72661da/go.mod h1:eHEWzANqSiWQsof+nXEI9bUVUyV6F53Fp89EuCh2EAA=
+github.com/andybalholm/brotli v1.0.5 h1:8uQZIdzKmjc/iuPu7O2ioW48L81FgatrcpfFmiq/cCs=
+github.com/andybalholm/brotli v1.0.5/go.mod h1:fO7iG3H7G2nSZ7m0zPUDn85XEX2GTukHGRSepvi9Eig=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

@@ -13,9 +13,9 @@ import (
 	"fmt"
 	"hash"
 	"io"
-	"net/http"
 	"strings"
 
+	"github.com/3JoB/nhtp"
 	errs "github.com/3JoB/ulib/err"
 	"github.com/3JoB/unsafeConvert"
 	"lukechampine.com/frand"

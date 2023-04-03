@@ -12,8 +12,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"net/http"
-	"net/http/httptest"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -23,6 +21,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/3JoB/nhtp"
+	"github.com/3JoB/nhtp/httptest"
 	"github.com/3JoB/unsafeConvert"
 	"github.com/goccy/go-json"
 	"github.com/goccy/go-reflect"

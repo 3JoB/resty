@@ -11,7 +11,6 @@ import (
 	"fmt"
 	"io"
 	"net"
-	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -21,6 +20,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/3JoB/nhtp"
 	"github.com/3JoB/unsafeConvert"
 	"github.com/goccy/go-reflect"
 )
@@ -335,7 +335,6 @@ func TestClientSetHeaderVerbatim(t *testing.T) {
 		SetHeaderVerbatim("header-lowercase", "value_lowercase").
 		SetHeader("header-lowercase", "value_standard")
 
-	//lint:ignore SA1008 valid one, so ignore this!
 	unConventionHdrValue := strings.Join(c.Header["header-lowercase"], "")
 	assertEqual(t, "value_lowercase", unConventionHdrValue)
 	assertEqual(t, "value_standard", c.Header.Get("Header-Lowercase"))

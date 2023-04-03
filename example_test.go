@@ -8,11 +8,11 @@ import (
 	"crypto/tls"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"strconv"
 	"time"
 
+	"github.com/3JoB/nhtp"
 	"github.com/3JoB/unsafeConvert"
 	"golang.org/x/net/proxy"
 

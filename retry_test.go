@@ -9,12 +9,12 @@ import (
 	"context"
 	"errors"
 	"io"
-	"net/http"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/3JoB/nhtp"
 	"github.com/3JoB/unsafeConvert"
 	"github.com/goccy/go-json"
 	"github.com/goccy/go-reflect"

@@ -9,9 +9,10 @@ package resty
 
 import (
 	"net"
-	"net/http"
 	"runtime"
 	"time"
+
+	"github.com/3JoB/nhtp"
 )
 
 func createTransport(localAddr net.Addr) *http.Transport {
