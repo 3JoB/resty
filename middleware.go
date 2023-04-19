@@ -16,9 +16,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/3JoB/go-reflect"
 	"github.com/3JoB/nhtp"
 	"github.com/3JoB/unsafeConvert"
-	"github.com/goccy/go-reflect"
 )
 
 const debugRequestLogKey = "__restyDebugRequestLog"
