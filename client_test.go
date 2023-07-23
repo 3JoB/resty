@@ -281,7 +281,7 @@ func TestClientSetRootCertificateFromString(t *testing.T) {
 	rootPemData, err := os.ReadFile(filepath.Join(getTestDataPath(), "sample-root.pem"))
 	assertNil(t, err)
 
-	client.SetRootCertificateFromString(unsafeConvert.StringReflect(rootPemData))
+	client.SetRootCertificateFromString(unsafeConvert.StringSlice(rootPemData))
 
 	transport, err := client.Transport()
 
@@ -299,7 +299,7 @@ func TestClientSetRootCertificateFromStringErrorTls(t *testing.T) {
 	client.SetTransport(rt)
 	transport, err := client.Transport()
 
-	client.SetRootCertificateFromString(unsafeConvert.StringReflect(rootPemData))
+	client.SetRootCertificateFromString(unsafeConvert.StringSlice(rootPemData))
 
 	assertNotNil(t, rt)
 	assertNotNil(t, err)
@@ -502,7 +502,7 @@ func TestClientPreRequestHook(t *testing.T) {
 		for i := 0; i < 5; i++ {
 			b, _ := r.GetBody()
 			rb, _ := io.ReadAll(b)
-			c.log.Debugf("%s %v", unsafeConvert.StringReflect(rb), len(rb))
+			c.log.Debugf("%s %v", unsafeConvert.StringSlice(rb), len(rb))
 			assertEqual(t, true, len(rb) >= 45)
 		}
 		return nil
@@ -521,7 +521,7 @@ func TestClientPreRequestHook(t *testing.T) {
 	// io.Reader body use case
 	resp, _ = client.R().
 		SetHeader(hdrContentTypeKey, jsonContentType).
-		SetBody(bytes.NewReader(unsafeConvert.BytesReflect(`{"username":"testuser", "password":"testpass"}`))).
+		SetBody(bytes.NewReader(unsafeConvert.ByteSlice(`{"username":"testuser", "password":"testpass"}`))).
 		Post(ts.URL + "/login")
 	assertEqual(t, http.StatusOK, resp.StatusCode())
 	assertEqual(t, `{ "id": "success", "message": "login successful" }`, resp.String())
@@ -550,7 +550,7 @@ func TestClientAllowsGetMethodPayloadDisabled(t *testing.T) {
 	c := dc()
 	c.SetAllowGetMethodPayload(false)
 
-	payload := bytes.NewReader(unsafeConvert.BytesReflect("test-payload"))
+	payload := bytes.NewReader(unsafeConvert.ByteSlice("test-payload"))
 	resp, err := c.R().SetBody(payload).Get(ts.URL + "/get-method-payload-test")
 
 	assertError(t, err)
@@ -981,7 +981,7 @@ func TestPostRedirectWithBody(t *testing.T) {
 		go func() {
 			defer wg.Done()
 			resp, err := c.R().
-				SetBody(unsafeConvert.BytesReflect(strconv.Itoa(newRnd().Int()))).
+				SetBody(unsafeConvert.ByteSlice(strconv.Itoa(newRnd().Int()))).
 				Post(targetURL.String() + "/redirect-with-body")
 			assertError(t, err)
 			assertNotNil(t, resp)

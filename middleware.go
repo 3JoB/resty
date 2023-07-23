@@ -449,7 +449,7 @@ func handleFormData(c *Client, r *Request) {
 		}
 	}
 
-	r.bodyBuf = bytes.NewBuffer(unsafeConvert.BytesReflect(formData.Encode()))
+	r.bodyBuf = bytes.NewBuffer(unsafeConvert.ByteSlice(formData.Encode()))
 	r.Header.Set(hdrContentTypeKey, formContentType)
 	r.isFormData = true
 }
@@ -475,7 +475,7 @@ func handleRequestBody(c *Client, r *Request) (err error) {
 	} else if b, ok := r.Body.([]byte); ok {
 		bodyBytes = b
 	} else if s, ok := r.Body.(string); ok {
-		bodyBytes = unsafeConvert.BytesReflect(s)
+		bodyBytes = unsafeConvert.ByteSlice(s)
 	} else if IsJSONType(contentType) &&
 		(kind == reflect.Struct || kind == reflect.Map || kind == reflect.Slice) {
 		r.bodyBuf, err = jsonMarshal(c, r, r.Body)

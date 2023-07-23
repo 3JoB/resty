@@ -94,7 +94,7 @@ func Example_post() {
 	// No need to set content type, if you have client level setting
 	resp1, err1 := client.R().
 		SetHeader("Content-Type", "application/json").
-		SetBody(unsafeConvert.BytesReflect(`{"username":"testuser", "password":"testpass"}`)).
+		SetBody(unsafeConvert.ByteSlice(`{"username":"testuser", "password":"testpass"}`)).
 		SetResult(AuthSuccess{}). // or SetResult(&AuthSuccess{}).
 		Post("https://myapp.com/login")
 

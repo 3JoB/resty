@@ -241,7 +241,7 @@ func (c *credentials) validateQop() error {
 func (c *credentials) h(data string) string {
 	hfCtor := hashFuncs[c.algorithm]
 	hf := hfCtor()
-	_, _ = hf.Write(unsafeConvert.BytesReflect(data)) // Hash.Write never returns an error
+	_, _ = hf.Write(unsafeConvert.ByteSlice(data)) // Hash.Write never returns an error
 	return fmt.Sprintf("%x", hf.Sum(nil))
 }
 

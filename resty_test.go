@@ -47,30 +47,30 @@ func createGetServer(t *testing.T) *httptest.Server {
 		if r.Method == MethodGet {
 			switch r.URL.Path {
 			case "/":
-				_, _ = w.Write(unsafeConvert.BytesReflect("TestGet: text response"))
+				_, _ = w.Write(unsafeConvert.ByteSlice("TestGet: text response"))
 			case "/no-content":
-				_, _ = w.Write(unsafeConvert.BytesReflect(""))
+				_, _ = w.Write(unsafeConvert.ByteSlice(""))
 			case "/json":
 				w.Header().Set("Content-Type", "application/json")
-				_, _ = w.Write(unsafeConvert.BytesReflect(`{"TestGet": "JSON response"}`))
+				_, _ = w.Write(unsafeConvert.ByteSlice(`{"TestGet": "JSON response"}`))
 			case "/json-invalid":
 				w.Header().Set("Content-Type", "application/json")
-				_, _ = w.Write(unsafeConvert.BytesReflect("TestGet: Invalid JSON"))
+				_, _ = w.Write(unsafeConvert.ByteSlice("TestGet: Invalid JSON"))
 			case "/long-text":
-				_, _ = w.Write(unsafeConvert.BytesReflect("TestGet: text response with size > 30"))
+				_, _ = w.Write(unsafeConvert.ByteSlice("TestGet: text response with size > 30"))
 			case "/long-json":
 				w.Header().Set("Content-Type", "application/json")
-				_, _ = w.Write(unsafeConvert.BytesReflect(`{"TestGet": "JSON response with size > 30"}`))
+				_, _ = w.Write(unsafeConvert.ByteSlice(`{"TestGet": "JSON response with size > 30"}`))
 			case "/mypage":
 				w.WriteHeader(http.StatusBadRequest)
 			case "/mypage2":
-				_, _ = w.Write(unsafeConvert.BytesReflect("TestGet: text response from mypage2"))
+				_, _ = w.Write(unsafeConvert.ByteSlice("TestGet: text response from mypage2"))
 			case "/set-retrycount-test":
 				attp := atomic.AddInt32(&attempt, 1)
 				if attp <= 4 {
 					time.Sleep(time.Second * 6)
 				}
-				_, _ = w.Write(unsafeConvert.BytesReflect("TestClientRetry page"))
+				_, _ = w.Write(unsafeConvert.ByteSlice("TestClientRetry page"))
 			case "/set-retrywaittime-test":
 				// Returns time.Duration since last request here
 				// or 0 for the very first request
@@ -89,9 +89,9 @@ func createGetServer(t *testing.T) *httptest.Server {
 				w.Header().Set(hdrContentTypeKey, "application/json; charset=utf-8")
 				if atomic.LoadInt32(&attempt) == 0 {
 					w.WriteHeader(http.StatusTooManyRequests)
-					_, _ = w.Write(unsafeConvert.BytesReflect(`{ "message": "too many" }`))
+					_, _ = w.Write(unsafeConvert.ByteSlice(`{ "message": "too many" }`))
 				} else {
-					_, _ = w.Write(unsafeConvert.BytesReflect(`{ "message": "hello" }`))
+					_, _ = w.Write(unsafeConvert.ByteSlice(`{ "message": "hello" }`))
 				}
 				atomic.AddInt32(&attempt, 1)
 			case "/set-timeout-test-with-sequence":
@@ -100,7 +100,7 @@ func createGetServer(t *testing.T) *httptest.Server {
 				_, _ = fmt.Fprintf(w, "%d", seq)
 			case "/set-timeout-test":
 				time.Sleep(time.Second * 6)
-				_, _ = w.Write(unsafeConvert.BytesReflect("TestClientTimeout page"))
+				_, _ = w.Write(unsafeConvert.ByteSlice("TestClientTimeout page"))
 			case "/my-image.png":
 				fileBytes, _ := os.ReadFile(filepath.Join(getTestDataPath(), "test-img.png"))
 				w.Header().Set("Content-Type", "image/png")
@@ -113,7 +113,7 @@ func createGetServer(t *testing.T) *httptest.Server {
 				}
 				_, _ = w.Write(body)
 			case "/host-header":
-				_, _ = w.Write(unsafeConvert.BytesReflect(r.Host))
+				_, _ = w.Write(unsafeConvert.ByteSlice(r.Host))
 			case "/not-found-with-error":
 				w.Header().Set(hdrContentTypeKey, "application/json")
 				w.WriteHeader(http.StatusNotFound)
@@ -126,9 +126,9 @@ func createGetServer(t *testing.T) *httptest.Server {
 			switch {
 			case strings.HasPrefix(r.URL.Path, "/v1/users/sample@sample.com/100002"):
 				if strings.HasSuffix(r.URL.Path, "details") {
-					_, _ = w.Write(unsafeConvert.BytesReflect("TestGetPathParams: text response: " + r.URL.String()))
+					_, _ = w.Write(unsafeConvert.ByteSlice("TestGetPathParams: text response: " + r.URL.String()))
 				} else {
-					_, _ = w.Write(unsafeConvert.BytesReflect("TestPathParamURLInput: text response: " + r.URL.String()))
+					_, _ = w.Write(unsafeConvert.ByteSlice("TestPathParamURLInput: text response: " + r.URL.String()))
 				}
 			}
 		}
@@ -156,17 +156,17 @@ func handleLoginEndpoint(t *testing.T, w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				t.Logf("Error: %#v", err)
 				w.WriteHeader(http.StatusBadRequest)
-				_, _ = w.Write(unsafeConvert.BytesReflect(`{ "id": "bad_request", "message": "Unable to read user info" }`))
+				_, _ = w.Write(unsafeConvert.ByteSlice(`{ "id": "bad_request", "message": "Unable to read user info" }`))
 				return
 			}
 
 			if user.Username == "testuser" && user.Password == "testpass" {
-				_, _ = w.Write(unsafeConvert.BytesReflect(`{ "id": "success", "message": "login successful" }`))
+				_, _ = w.Write(unsafeConvert.ByteSlice(`{ "id": "success", "message": "login successful" }`))
 			} else if user.Username == "testuser" && user.Password == "invalidjson" {
-				_, _ = w.Write(unsafeConvert.BytesReflect(`{ "id": "success", "message": "login successful", }`))
+				_, _ = w.Write(unsafeConvert.ByteSlice(`{ "id": "success", "message": "login successful", }`))
 			} else {
 				w.WriteHeader(http.StatusUnauthorized)
-				_, _ = w.Write(unsafeConvert.BytesReflect(`{ "id": "unauthorized", "message": "Invalid credentials" }`))
+				_, _ = w.Write(unsafeConvert.ByteSlice(`{ "id": "unauthorized", "message": "Invalid credentials" }`))
 			}
 
 			return
@@ -181,22 +181,22 @@ func handleLoginEndpoint(t *testing.T, w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				t.Logf("Error: %v", err)
 				w.WriteHeader(http.StatusBadRequest)
-				_, _ = w.Write(unsafeConvert.BytesReflect(`<?xml version="1.0" encoding="UTF-8"?>`))
-				_, _ = w.Write(unsafeConvert.BytesReflect(`<AuthError><Id>bad_request</Id><Message>Unable to read user info</Message></AuthError>`))
+				_, _ = w.Write(unsafeConvert.ByteSlice(`<?xml version="1.0" encoding="UTF-8"?>`))
+				_, _ = w.Write(unsafeConvert.ByteSlice(`<AuthError><Id>bad_request</Id><Message>Unable to read user info</Message></AuthError>`))
 				return
 			}
 
 			if user.Username == "testuser" && user.Password == "testpass" {
-				_, _ = w.Write(unsafeConvert.BytesReflect(`<?xml version="1.0" encoding="UTF-8"?>`))
-				_, _ = w.Write(unsafeConvert.BytesReflect(`<AuthSuccess><Id>success</Id><Message>login successful</Message></AuthSuccess>`))
+				_, _ = w.Write(unsafeConvert.ByteSlice(`<?xml version="1.0" encoding="UTF-8"?>`))
+				_, _ = w.Write(unsafeConvert.ByteSlice(`<AuthSuccess><Id>success</Id><Message>login successful</Message></AuthSuccess>`))
 			} else if user.Username == "testuser" && user.Password == "invalidxml" {
-				_, _ = w.Write(unsafeConvert.BytesReflect(`<?xml version="1.0" encoding="UTF-8"?>`))
-				_, _ = w.Write(unsafeConvert.BytesReflect(`<AuthSuccess><Id>success</Id><Message>login successful</AuthSuccess>`))
+				_, _ = w.Write(unsafeConvert.ByteSlice(`<?xml version="1.0" encoding="UTF-8"?>`))
+				_, _ = w.Write(unsafeConvert.ByteSlice(`<AuthSuccess><Id>success</Id><Message>login successful</AuthSuccess>`))
 			} else {
 				w.Header().Set("Www-Authenticate", "Protected Realm")
 				w.WriteHeader(http.StatusUnauthorized)
-				_, _ = w.Write(unsafeConvert.BytesReflect(`<?xml version="1.0" encoding="UTF-8"?>`))
-				_, _ = w.Write(unsafeConvert.BytesReflect(`<AuthError><Id>unauthorized</Id><Message>Invalid credentials</Message></AuthError>`))
+				_, _ = w.Write(unsafeConvert.ByteSlice(`<?xml version="1.0" encoding="UTF-8"?>`))
+				_, _ = w.Write(unsafeConvert.ByteSlice(`<AuthError><Id>unauthorized</Id><Message>Invalid credentials</Message></AuthError>`))
 			}
 
 			return
@@ -215,7 +215,7 @@ func handleUsersEndpoint(t *testing.T, w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				t.Logf("Error: %v", err)
 				w.WriteHeader(http.StatusBadRequest)
-				_, _ = w.Write(unsafeConvert.BytesReflect(`{ "id": "bad_request", "message": "Unable to read user info" }`))
+				_, _ = w.Write(unsafeConvert.ByteSlice(`{ "id": "bad_request", "message": "Unable to read user info" }`))
 				return
 			}
 
@@ -223,14 +223,14 @@ func handleUsersEndpoint(t *testing.T, w http.ResponseWriter, r *http.Request) {
 			if len(users) != 3 {
 				t.Log("Error: Excepted count of 3 records")
 				w.WriteHeader(http.StatusBadRequest)
-				_, _ = w.Write(unsafeConvert.BytesReflect(`{ "id": "bad_request", "message": "Expected record count doesn't match" }`))
+				_, _ = w.Write(unsafeConvert.ByteSlice(`{ "id": "bad_request", "message": "Expected record count doesn't match" }`))
 				return
 			}
 
 			eu := users[2]
 			if eu.FirstName == "firstname3" && eu.ZipCode == "10003" {
 				w.WriteHeader(http.StatusAccepted)
-				_, _ = w.Write(unsafeConvert.BytesReflect(`{ "message": "Accepted" }`))
+				_, _ = w.Write(unsafeConvert.ByteSlice(`{ "message": "Accepted" }`))
 			}
 
 			return
@@ -253,7 +253,7 @@ func createPostServer(t *testing.T) *httptest.Server {
 			case "/login-json-html":
 				w.Header().Set(hdrContentTypeKey, "text/html")
 				w.WriteHeader(http.StatusOK)
-				_, _ = w.Write(unsafeConvert.BytesReflect(`<htm><body>Test JSON request with HTML response</body></html>`))
+				_, _ = w.Write(unsafeConvert.ByteSlice(`<htm><body>Test JSON request with HTML response</body></html>`))
 				return
 			case "/usersmap":
 				// JSON
@@ -263,7 +263,7 @@ func createPostServer(t *testing.T) *httptest.Server {
 						if err != nil {
 							t.Errorf("Error: could not read post body: %s", err.Error())
 						}
-						t.Logf("Got query param: status=500 so we're returning the post body as response and a 500 status code. body: %s", unsafeConvert.StringReflect(body))
+						t.Logf("Got query param: status=500 so we're returning the post body as response and a 500 status code. body: %s", unsafeConvert.StringSlice(body))
 						w.Header().Set(hdrContentTypeKey, "application/json; charset=utf-8")
 						w.WriteHeader(http.StatusInternalServerError)
 						_, _ = w.Write(body)
@@ -277,7 +277,7 @@ func createPostServer(t *testing.T) *httptest.Server {
 					if err != nil {
 						t.Logf("Error: %v", err)
 						w.WriteHeader(http.StatusBadRequest)
-						_, _ = w.Write(unsafeConvert.BytesReflect(`{ "id": "bad_request", "message": "Unable to read user info" }`))
+						_, _ = w.Write(unsafeConvert.ByteSlice(`{ "id": "bad_request", "message": "Unable to read user info" }`))
 						return
 					}
 
@@ -285,12 +285,12 @@ func createPostServer(t *testing.T) *httptest.Server {
 					if len(users) != 1 {
 						t.Log("Error: Excepted count of 1 map records")
 						w.WriteHeader(http.StatusBadRequest)
-						_, _ = w.Write(unsafeConvert.BytesReflect(`{ "id": "bad_request", "message": "Expected record count doesn't match" }`))
+						_, _ = w.Write(unsafeConvert.ByteSlice(`{ "id": "bad_request", "message": "Expected record count doesn't match" }`))
 						return
 					}
 
 					w.WriteHeader(http.StatusAccepted)
-					_, _ = w.Write(unsafeConvert.BytesReflect(`{ "message": "Accepted" }`))
+					_, _ = w.Write(unsafeConvert.ByteSlice(`{ "message": "Accepted" }`))
 
 					return
 				}
@@ -300,12 +300,12 @@ func createPostServer(t *testing.T) *httptest.Server {
 			case "/redirect-with-body":
 				body, _ := io.ReadAll(r.Body)
 				query := url.Values{}
-				query.Add("body", unsafeConvert.StringReflect(body))
+				query.Add("body", unsafeConvert.StringSlice(body))
 				w.Header().Set(hdrLocationKey, "/redirected-with-body?"+query.Encode())
 				w.WriteHeader(http.StatusTemporaryRedirect)
 			case "/redirected-with-body":
 				body, _ := io.ReadAll(r.Body)
-				assertEqual(t, r.URL.Query().Get("body"), unsafeConvert.StringReflect(body))
+				assertEqual(t, r.URL.Query().Get("body"), unsafeConvert.StringSlice(body))
 				w.WriteHeader(http.StatusOK)
 			}
 		}
@@ -329,7 +329,7 @@ func createFormPostServer(t *testing.T) *httptest.Server {
 				t.Logf("City: %v", r.FormValue("city"))
 				t.Logf("Zip Code: %v", r.FormValue("zip_code"))
 
-				_, _ = w.Write(unsafeConvert.BytesReflect("Success"))
+				_, _ = w.Write(unsafeConvert.ByteSlice("Success"))
 				return
 			} else if r.URL.Path == "/search" {
 				formEncodedData := r.Form.Encode()
@@ -338,7 +338,7 @@ func createFormPostServer(t *testing.T) *httptest.Server {
 				assertEqual(t, true, strings.Contains(formEncodedData, "search_criteria=pencil"))
 				assertEqual(t, true, strings.Contains(formEncodedData, "search_criteria=glass"))
 
-				_, _ = w.Write(unsafeConvert.BytesReflect("Success"))
+				_, _ = w.Write(unsafeConvert.ByteSlice("Success"))
 				return
 			} else if r.URL.Path == "/upload" {
 				t.Logf("FirstName: %v", r.FormValue("first_name"))
@@ -489,13 +489,13 @@ func createAuthServerTLSOptional(t *testing.T, useTLS bool) *httptest.Server {
 				if !strings.HasPrefix(auth, "Bearer ") {
 					w.Header().Set("Www-Authenticate", "Protected Realm")
 					w.WriteHeader(http.StatusUnauthorized)
-					_, _ = w.Write(unsafeConvert.BytesReflect(`{ "id": "unauthorized", "message": "Invalid credentials" }`))
+					_, _ = w.Write(unsafeConvert.ByteSlice(`{ "id": "unauthorized", "message": "Invalid credentials" }`))
 
 					return
 				}
 
 				if auth[7:] == "004DDB79-6801-4587-B976-F093E6AC44FF" || auth[7:] == "004DDB79-6801-4587-B976-F093E6AC44FF-Request" {
-					_, _ = w.Write(unsafeConvert.BytesReflect(`{ "id": "success", "message": "login successful" }`))
+					_, _ = w.Write(unsafeConvert.ByteSlice(`{ "id": "success", "message": "login successful" }`))
 				}
 			}
 
@@ -510,15 +510,15 @@ func createAuthServerTLSOptional(t *testing.T, useTLS bool) *httptest.Server {
 				w.Header().Set(hdrContentTypeKey, "application/json; charset=utf-8")
 
 				password, err := base64.StdEncoding.DecodeString(auth[6:])
-				if err != nil || unsafeConvert.StringReflect(password) != "myuser:basicauth" {
+				if err != nil || unsafeConvert.StringSlice(password) != "myuser:basicauth" {
 					w.Header().Set("Www-Authenticate", "Protected Realm")
 					w.WriteHeader(http.StatusUnauthorized)
-					_, _ = w.Write(unsafeConvert.BytesReflect(`{ "id": "unauthorized", "message": "Invalid credentials" }`))
+					_, _ = w.Write(unsafeConvert.ByteSlice(`{ "id": "unauthorized", "message": "Invalid credentials" }`))
 
 					return
 				}
 
-				_, _ = w.Write(unsafeConvert.BytesReflect(`{ "id": "success", "message": "login successful" }`))
+				_, _ = w.Write(unsafeConvert.ByteSlice(`{ "id": "success", "message": "login successful" }`))
 			}
 
 			return
@@ -540,19 +540,19 @@ func createGenServer(t *testing.T) *httptest.Server {
 				// Set empty header value for testing, since Go server sets to
 				// text/plain; charset=utf-8
 				w.Header().Set(hdrContentTypeKey, "")
-				_, _ = w.Write(unsafeConvert.BytesReflect(`{"response":"json response no content type set"}`))
+				_, _ = w.Write(unsafeConvert.ByteSlice(`{"response":"json response no content type set"}`))
 			} else if r.URL.Path == "/gzip-test" {
 				w.Header().Set(hdrContentTypeKey, plainTextType)
 				w.Header().Set(hdrContentEncodingKey, "gzip")
 				zw := gzip.NewWriter(w)
-				_, _ = zw.Write(unsafeConvert.BytesReflect("This is Gzip response testing"))
+				_, _ = zw.Write(unsafeConvert.ByteSlice("This is Gzip response testing"))
 				zw.Close()
 			} else if r.URL.Path == "/gzip-test-gziped-empty-body" {
 				w.Header().Set(hdrContentTypeKey, plainTextType)
 				w.Header().Set(hdrContentEncodingKey, "gzip")
 				zw := gzip.NewWriter(w)
 				// write gziped empty body
-				_, _ = zw.Write(unsafeConvert.BytesReflect(""))
+				_, _ = zw.Write(unsafeConvert.ByteSlice(""))
 				zw.Close()
 			} else if r.URL.Path == "/gzip-test-no-gziped-body" {
 				w.Header().Set(hdrContentTypeKey, plainTextType)
@@ -565,13 +565,13 @@ func createGenServer(t *testing.T) *httptest.Server {
 
 		if r.Method == MethodPut {
 			if r.URL.Path == "/plaintext" {
-				_, _ = w.Write(unsafeConvert.BytesReflect("TestPut: plain text response"))
+				_, _ = w.Write(unsafeConvert.ByteSlice("TestPut: plain text response"))
 			} else if r.URL.Path == "/json" {
 				w.Header().Set(hdrContentTypeKey, "application/json; charset=utf-8")
-				_, _ = w.Write(unsafeConvert.BytesReflect(`{"response":"json response"}`))
+				_, _ = w.Write(unsafeConvert.ByteSlice(`{"response":"json response"}`))
 			} else if r.URL.Path == "/xml" {
 				w.Header().Set(hdrContentTypeKey, "application/xml")
-				_, _ = w.Write(unsafeConvert.BytesReflect(`<?xml version="1.0" encoding="UTF-8"?><Response>XML response</Response>`))
+				_, _ = w.Write(unsafeConvert.ByteSlice(`<?xml version="1.0" encoding="UTF-8"?><Response>XML response</Response>`))
 			}
 			return
 		}
@@ -685,10 +685,10 @@ func createDigestServer(t *testing.T, conf *digestServerConfig) *httptest.Server
 			setWWWAuthHeader(w,
 				fmt.Sprintf(`Digest realm="%s", domain="%s", qop="%s", algorithm=%s, nonce="%s", opaque="%s", userhash=true, charset=%s, stale=FALSE`,
 					conf.realm, conf.uri, conf.qop, conf.algo, conf.nonce, conf.opaque, conf.charset))
-			_, _ = w.Write(unsafeConvert.BytesReflect(`{ "id": "unauthorized", "message": "Invalid credentials" }`))
+			_, _ = w.Write(unsafeConvert.ByteSlice(`{ "id": "unauthorized", "message": "Invalid credentials" }`))
 		} else {
 			w.WriteHeader(http.StatusOK)
-			_, _ = w.Write(unsafeConvert.BytesReflect(`{ "id": "success", "message": "login successful" }`))
+			_, _ = w.Write(unsafeConvert.ByteSlice(`{ "id": "success", "message": "login successful" }`))
 		}
 	})
 

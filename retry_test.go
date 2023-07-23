@@ -229,7 +229,7 @@ func TestClientRetryWait(t *testing.T) {
 		SetRetryMaxWaitTime(retryMaxWaitTime).
 		AddRetryCondition(
 			func(r *Response, _ error) bool {
-				timeSlept, _ := strconv.ParseUint(unsafeConvert.StringReflect(r.Body()), 10, 64)
+				timeSlept, _ := strconv.ParseUint(unsafeConvert.StringSlice(r.Body()), 10, 64)
 				retryIntervals[attempt] = timeSlept
 				attempt++
 				return true
@@ -272,7 +272,7 @@ func TestClientRetryWaitMaxInfinite(t *testing.T) {
 		SetRetryMaxWaitTime(retryMaxWaitTime).
 		AddRetryCondition(
 			func(r *Response, _ error) bool {
-				timeSlept, _ := strconv.ParseUint(unsafeConvert.StringReflect(r.Body()), 10, 64)
+				timeSlept, _ := strconv.ParseUint(unsafeConvert.StringSlice(r.Body()), 10, 64)
 				retryIntervals[attempt] = timeSlept
 				attempt++
 				return true
@@ -334,7 +334,7 @@ func TestClientRetryWaitCallbackError(t *testing.T) {
 		SetRetryAfter(retryAfter).
 		AddRetryCondition(
 			func(r *Response, _ error) bool {
-				timeSlept, _ := strconv.ParseUint(unsafeConvert.StringReflect(r.Body()), 10, 64)
+				timeSlept, _ := strconv.ParseUint(unsafeConvert.StringSlice(r.Body()), 10, 64)
 				retryIntervals[attempt] = timeSlept
 				attempt++
 				return true
@@ -374,7 +374,7 @@ func TestClientRetryWaitCallback(t *testing.T) {
 		SetRetryAfter(retryAfter).
 		AddRetryCondition(
 			func(r *Response, _ error) bool {
-				timeSlept, _ := strconv.ParseUint(unsafeConvert.StringReflect(r.Body()), 10, 64)
+				timeSlept, _ := strconv.ParseUint(unsafeConvert.StringSlice(r.Body()), 10, 64)
 				retryIntervals[attempt] = timeSlept
 				attempt++
 				return true
@@ -422,7 +422,7 @@ func TestClientRetryWaitCallbackTooShort(t *testing.T) {
 		SetRetryAfter(retryAfter).
 		AddRetryCondition(
 			func(r *Response, _ error) bool {
-				timeSlept, _ := strconv.ParseUint(unsafeConvert.StringReflect(r.Body()), 10, 64)
+				timeSlept, _ := strconv.ParseUint(unsafeConvert.StringSlice(r.Body()), 10, 64)
 				retryIntervals[attempt] = timeSlept
 				attempt++
 				return true
@@ -470,7 +470,7 @@ func TestClientRetryWaitCallbackTooLong(t *testing.T) {
 		SetRetryAfter(retryAfter).
 		AddRetryCondition(
 			func(r *Response, _ error) bool {
-				timeSlept, _ := strconv.ParseUint(unsafeConvert.StringReflect(r.Body()), 10, 64)
+				timeSlept, _ := strconv.ParseUint(unsafeConvert.StringSlice(r.Body()), 10, 64)
 				retryIntervals[attempt] = timeSlept
 				attempt++
 				return true
@@ -519,7 +519,7 @@ func TestClientRetryWaitCallbackSwitchToDefault(t *testing.T) {
 		SetRetryAfter(retryAfter).
 		AddRetryCondition(
 			func(r *Response, _ error) bool {
-				timeSlept, _ := strconv.ParseUint(unsafeConvert.StringReflect(r.Body()), 10, 64)
+				timeSlept, _ := strconv.ParseUint(unsafeConvert.StringSlice(r.Body()), 10, 64)
 				retryIntervals[attempt] = timeSlept
 				attempt++
 				return true
@@ -569,7 +569,7 @@ func TestClientRetryCancel(t *testing.T) {
 		SetRetryMaxWaitTime(retryMaxWaitTime).
 		AddRetryCondition(
 			func(r *Response, _ error) bool {
-				timeSlept, _ := strconv.ParseUint(unsafeConvert.StringReflect(r.Body()), 10, 64)
+				timeSlept, _ := strconv.ParseUint(unsafeConvert.StringSlice(r.Body()), 10, 64)
 				retryIntervals[attempt] = timeSlept
 				attempt++
 				return true
@@ -617,18 +617,18 @@ func TestClientRetryPost(t *testing.T) {
 
 	if resp != nil {
 		if resp.StatusCode() == http.StatusInternalServerError {
-			t.Logf("Got response body: %s", unsafeConvert.StringReflect(resp.body))
+			t.Logf("Got response body: %s", unsafeConvert.StringSlice(resp.body))
 			var usersResponse []map[string]any
 			err := json.Unmarshal(resp.body, &usersResponse)
 			assertError(t, err)
 
 			if !reflect.DeepEqual(users, usersResponse) {
-				t.Errorf("Expected request body to be echoed back as response body. Instead got: %s", unsafeConvert.StringReflect(resp.body))
+				t.Errorf("Expected request body to be echoed back as response body. Instead got: %s", unsafeConvert.StringSlice(resp.body))
 			}
 
 			return
 		}
-		t.Errorf("Got unexpected response code: %d with body: %s", resp.StatusCode(), unsafeConvert.StringReflect(resp.body))
+		t.Errorf("Got unexpected response code: %d with body: %s", resp.StatusCode(), unsafeConvert.StringSlice(resp.body))
 	}
 }
 
@@ -775,7 +775,7 @@ func TestResetMultipartReaderSeekStartError(t *testing.T) {
 	defer ts.Close()
 
 	testSeeker := &failingSeeker{
-		reader: bytes.NewReader(unsafeConvert.BytesReflect("test")),
+		reader: bytes.NewReader(unsafeConvert.ByteSlice("test")),
 	}
 
 	c := dc().
@@ -797,7 +797,7 @@ func TestResetMultipartReaders(t *testing.T) {
 	defer ts.Close()
 
 	str := "test"
-	buf := unsafeConvert.BytesReflect(str)
+	buf := unsafeConvert.ByteSlice(str)
 
 	bufReader := bytes.NewReader(buf)
 	bufCpy := make([]byte, len(buf))
@@ -813,7 +813,7 @@ func TestResetMultipartReaders(t *testing.T) {
 
 				assertNil(t, err)
 				assertEqual(t, len(buf), read)
-				assertEqual(t, str, unsafeConvert.StringReflect(bufCpy))
+				assertEqual(t, str, unsafeConvert.StringSlice(bufCpy))
 			},
 		)
 

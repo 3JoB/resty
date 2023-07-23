@@ -1006,7 +1006,7 @@ func (r *Request) fmtBodyString(sl int64) (body string) {
 		prtBodyBytes, err = xml.MarshalIndent(&r.Body, "", "   ")
 	} else if b, ok := r.Body.(string); ok {
 		if IsJSONType(contentType) {
-			bodyBytes := unsafeConvert.BytesReflect(b)
+			bodyBytes := unsafeConvert.ByteSlice(b)
 			out := acquireBuffer()
 			defer releaseBuffer(out)
 			if err = json.Indent(out, bodyBytes, "", "   "); err == nil {
@@ -1021,11 +1021,11 @@ func (r *Request) fmtBodyString(sl int64) (body string) {
 	}
 
 	if prtBodyBytes != nil && err == nil {
-		body = unsafeConvert.StringReflect(prtBodyBytes)
+		body = unsafeConvert.StringSlice(prtBodyBytes)
 	}
 
 	if len(body) > 0 {
-		bodySize := int64(len(unsafeConvert.BytesReflect(body)))
+		bodySize := int64(len(unsafeConvert.ByteSlice(body)))
 		if bodySize > sl {
 			body = fmt.Sprintf("***** REQUEST TOO LARGE (size - %d) *****", bodySize)
 		}
