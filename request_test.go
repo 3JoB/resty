@@ -1637,7 +1637,7 @@ func TestGetPathParamAndPathParams(t *testing.T) {
 	defer ts.Close()
 
 	c := dc().
-		SetHostURL(ts.URL).
+		SetBaseURL(ts.URL).
 		SetPathParam("userId", "sample@sample.com")
 
 	resp, err := c.R().SetPathParam("subAccountId", "100002").
@@ -1745,26 +1745,100 @@ func TestHostHeaderOverride(t *testing.T) {
 	logResponse(t, resp)
 }
 
+type HTTPErrorResponse struct {
+	Error string `json:"error,omitempty"`
+}
+
+func TestNotFoundWithError(t *testing.T) {
+	var httpError HTTPErrorResponse
+	ts := createGetServer(t)
+	defer ts.Close()
+
+	resp, err := dc().R().
+		SetHeader(hdrContentTypeKey, "application/json").
+		SetError(&httpError).
+		Get(ts.URL + "/not-found-with-error")
+
+	assertError(t, err)
+	assertEqual(t, http.StatusNotFound, resp.StatusCode())
+	assertEqual(t, "404 Not Found", resp.Status())
+	assertNotNil(t, resp.Body())
+	assertEqual(t, "{\"error\": \"Not found\"}", resp.String())
+	assertNotNil(t, httpError)
+	assertEqual(t, "Not found", httpError.Error)
+
+	logResponse(t, resp)
+}
+
+func TestNotFoundWithoutError(t *testing.T) {
+	var httpError HTTPErrorResponse
+
+	ts := createGetServer(t)
+	defer ts.Close()
+
+	c := dc().outputLogTo(os.Stdout)
+	resp, err := c.R().
+		SetError(&httpError).
+		SetHeader(hdrContentTypeKey, "application/json").
+		Get(ts.URL + "/not-found-no-error")
+
+	assertError(t, err)
+	assertEqual(t, http.StatusNotFound, resp.StatusCode())
+	assertEqual(t, "404 Not Found", resp.Status())
+	assertNotNil(t, resp.Body())
+	assertEqual(t, 0, len(resp.Body()))
+	assertNotNil(t, httpError)
+	assertEqual(t, "", httpError.Error)
+
+	logResponse(t, resp)
+}
+
 func TestPathParamURLInput(t *testing.T) {
 	ts := createGetServer(t)
 	defer ts.Close()
 
 	c := dc().SetDebug(true).
-		SetHostURL(ts.URL).
+		SetBaseURL(ts.URL).
 		SetPathParams(map[string]string{
 			"userId": "sample@sample.com",
+			"path":   "users/developers",
 		})
 
 	resp, err := c.R().
 		SetPathParams(map[string]string{
 			"subAccountId": "100002",
 			"website":      "https://example.com",
-		}).Get("/v1/users/{userId}/{subAccountId}/{website}")
+		}).Get("/v1/users/{userId}/{subAccountId}/{path}/{website}")
 
 	assertError(t, err)
 	assertEqual(t, http.StatusOK, resp.StatusCode())
 	assertEqual(t, true, strings.Contains(resp.String(), "TestPathParamURLInput: text response"))
-	assertEqual(t, true, strings.Contains(resp.String(), "/v1/users/sample@sample.com/100002/https:%2F%2Fexample.com"))
+	assertEqual(t, true, strings.Contains(resp.String(), "/v1/users/sample@sample.com/100002/users%2Fdevelopers/https:%2F%2Fexample.com"))
+
+	logResponse(t, resp)
+}
+
+func TestRawPathParamURLInput(t *testing.T) {
+	ts := createGetServer(t)
+	defer ts.Close()
+
+	c := dc().SetDebug(true).
+		SetBaseURL(ts.URL).
+		SetRawPathParams(map[string]string{
+			"userId": "sample@sample.com",
+			"path":   "users/developers",
+		})
+
+	resp, err := c.R().
+		SetRawPathParams(map[string]string{
+			"subAccountId": "100002",
+			"website":      "https://example.com",
+		}).Get("/v1/users/{userId}/{subAccountId}/{path}/{website}")
+
+	assertError(t, err)
+	assertEqual(t, http.StatusOK, resp.StatusCode())
+	assertEqual(t, true, strings.Contains(resp.String(), "TestPathParamURLInput: text response"))
+	assertEqual(t, true, strings.Contains(resp.String(), "/v1/users/sample@sample.com/100002/users/developers/https://example.com"))
 
 	logResponse(t, resp)
 }

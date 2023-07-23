@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"mime/multipart"
 	"net/http"
 	"net/url"
@@ -17,6 +18,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/3JoB/ulib/litefmt"
 	"github.com/3JoB/unsafeConvert"
 	"github.com/goccy/go-reflect"
 )
@@ -36,6 +38,18 @@ func parseRequestURL(c *Client, r *Request) error {
 	if len(c.PathParams) > 0 {
 		for p, v := range c.PathParams {
 			r.URL = strings.ReplaceAll(r.URL, "{"+p+"}", url.PathEscape(v))
+		}
+	}
+
+	// GitHub #663 Raw Path Params
+	if len(r.RawPathParams) > 0 {
+		for p, v := range r.RawPathParams {
+			r.URL = strings.ReplaceAll(r.URL, "{"+p+"}", v)
+		}
+	}
+	if len(c.RawPathParams) > 0 {
+		for p, v := range c.RawPathParams {
+			r.URL = strings.ReplaceAll(r.URL, "{"+p+"}", v)
 		}
 	}
 
@@ -90,7 +104,7 @@ func parseRequestURL(c *Client, r *Request) error {
 		if IsStringEmpty(reqURL.RawQuery) {
 			reqURL.RawQuery = query.Encode()
 		} else {
-			reqURL.RawQuery = reqURL.RawQuery + "&" + query.Encode()
+			reqURL.RawQuery = litefmt.Sprint(reqURL.RawQuery, "&", query.Encode())
 		}
 	}
 
@@ -347,7 +361,10 @@ func parseResponseBody(c *Client, res *Response) (err error) {
 			}
 
 			if res.Request.Error != nil {
-				err = Unmarshalc(c, ct, res.body, res.Request.Error)
+				unmarshalErr := Unmarshalc(c, ct, res.body, res.Request.Error)
+				if unmarshalErr != nil {
+					log.Printf("[WARN] Cannot unmarshal response body: %s", unmarshalErr)
+				}
 			}
 		}
 	}
