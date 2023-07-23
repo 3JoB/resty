@@ -7,11 +7,11 @@ package resty
 import (
 	"fmt"
 	"io"
+	"net/http"
 	"strings"
 	"time"
 
 	"github.com/3JoB/go-json"
-	"github.com/3JoB/nhtp"
 	"github.com/3JoB/unsafeConvert"
 )
 

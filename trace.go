@@ -8,9 +8,8 @@ import (
 	"context"
 	"crypto/tls"
 	"net"
+	"net/http/httptrace"
 	"time"
-
-	"github.com/3JoB/nhtp/httptrace"
 )
 
 // ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾

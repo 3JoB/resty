@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"net/http"
 	"net/url"
 	"os"
 	"strings"
@@ -22,9 +23,8 @@ import (
 	"time"
 
 	"github.com/3JoB/go-json"
-	"github.com/3JoB/go-reflect"
-	"github.com/3JoB/nhtp"
 	"github.com/3JoB/unsafeConvert"
+	"github.com/goccy/go-reflect"
 	"github.com/grafana/regexp"
 	"github.com/quic-go/quic-go"
 	"github.com/quic-go/quic-go/http3"

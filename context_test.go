@@ -8,13 +8,13 @@ package resty
 
 import (
 	"context"
+	"net/http"
 	"net/url"
 	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
 
-	"github.com/3JoB/nhtp"
 	"github.com/3JoB/unsafeConvert"
 )
 

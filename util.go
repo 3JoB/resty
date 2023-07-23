@@ -10,6 +10,7 @@ import (
 	"io"
 	"log"
 	"mime/multipart"
+	"net/http"
 	"net/textproto"
 	"os"
 	"path/filepath"
@@ -18,8 +19,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/3JoB/go-reflect"
-	"github.com/3JoB/nhtp"
+	"github.com/goccy/go-reflect"
 )
 
 // ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾

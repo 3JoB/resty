@@ -8,9 +8,8 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/http"
 	"strings"
-
-	"github.com/3JoB/nhtp"
 )
 
 var (

@@ -12,6 +12,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -22,10 +24,8 @@ import (
 	"time"
 
 	"github.com/3JoB/go-json"
-	"github.com/3JoB/go-reflect"
-	"github.com/3JoB/nhtp"
-	"github.com/3JoB/nhtp/httptest"
 	"github.com/3JoB/unsafeConvert"
+	"github.com/goccy/go-reflect"
 )
 
 // ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
