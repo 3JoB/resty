@@ -6,7 +6,6 @@ package resty
 
 import (
 	"bytes"
-	"compress/gzip"
 	"context"
 	"crypto/tls"
 	"crypto/x509"
@@ -22,10 +21,14 @@ import (
 	"sync"
 	"time"
 
+	"github.com/3JoB/brotli"
 	"github.com/3JoB/unsafeConvert"
 	"github.com/goccy/go-json"
 	"github.com/goccy/go-reflect"
 	"github.com/grafana/regexp"
+	"github.com/klauspost/compress/flate"
+	"github.com/klauspost/compress/gzip"
+	"github.com/klauspost/compress/zstd"
 	"github.com/quic-go/quic-go"
 	"github.com/quic-go/quic-go/http3"
 )
@@ -442,24 +445,20 @@ func (c *Client) SetDigestAuth(username, password string) *Client {
 // Enable http3 support for this client
 //
 // Note: This operation will cover the Transport parameter.
-//
-// Warning: http3 is temporarily disabled due to switching to net/http which is a non-standard library
 func (c *Client) SetHttp3Enable() *Client {
-	// c.httpClient.Transport = &http3.RoundTripper{}
+	c.httpClient.Transport = &http3.RoundTripper{}
 	return c
 }
 
-// Warning: http3 is temporarily disabled due to switching to net/http which is a non-standard library
 func (c *Client) SetHttp3EnableWithDial(dial func(ctx context.Context, addr string, tlsCfg *tls.Config, cfg *quic.Config) (quic.EarlyConnection, error)) *Client {
-	// c.httpClient.Transport = &http3.RoundTripper{
-	//	Dial: dial,
-	// }
+	c.httpClient.Transport = &http3.RoundTripper{
+		Dial: dial,
+	}
 	return c
 }
 
-// Warning: http3 is temporarily disabled due to switching to net/http which is a non-standard library
 func (c *Client) SetHttp3Custom(r *http3.RoundTripper) *Client {
-	// c.httpClient.Transport = r
+	c.httpClient.Transport = r
 	return c
 }
 
@@ -1195,9 +1194,36 @@ func (c *Client) execute(req *Request) (*Response, error) {
 		body := resp.Body
 
 		// GitHub #142 & #187
-		if strings.EqualFold(resp.Header.Get(hdrContentEncodingKey), "gzip") && resp.ContentLength != 0 {
-			if _, ok := body.(*gzip.Reader); !ok {
-				body, err = gzip.NewReader(body)
+		if resp.ContentLength != 0 {
+			encodingKey := strings.ToLower(resp.Header.Get(hdrContentEncodingKey))
+			switch encodingKey {
+			case "gzip":
+				if _, ok := body.(*gzip.Reader); !ok {
+					body, err = gzip.NewReader(body)
+					if err != nil {
+						response.setReceivedAt()
+						return response, err
+					}
+					defer closeq(body)
+				}
+			case "zstd":
+				b, err := zstd.NewReader(body, nil)
+				if err != nil {
+					response.setReceivedAt()
+					return response, err
+				}
+				defer closeq(b.IOReadCloser())
+			case "br":
+				if _, ok := body.(*brotli.Reader); !ok {
+					body = brotli.NewReader(body)
+					if err != nil {
+						response.setReceivedAt()
+						return response, err
+					}
+					defer closeq(body)
+				}
+			case "deflate":
+				body = flate.NewReader(body)
 				if err != nil {
 					response.setReceivedAt()
 					return response, err
@@ -1205,7 +1231,6 @@ func (c *Client) execute(req *Request) (*Response, error) {
 				defer closeq(body)
 			}
 		}
-
 		if response.body, err = io.ReadAll(body); err != nil {
 			response.setReceivedAt()
 			return response, err

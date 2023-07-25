@@ -1,3 +1,5 @@
+github.com/3JoB/brotli v0.0.1 h1:ugJsMozj0PN2AyMYQGpK14c15LzW85BM2LiT99y8PrQ=
+github.com/3JoB/brotli v0.0.1/go.mod h1:sVglhBA8+BXimQTYS472Olg0f9Ftc6Df3g27yiWzDNI=
 github.com/3JoB/go-reflect v1.0.1 h1:o8FsdGDAq32rM84vjIcoEs6ezB2whS0MCR+w7HNIuqI=
 github.com/3JoB/go-reflect v1.0.1/go.mod h1:uqE8sGxe7gZKaXFFhkzOhXgAPnSdlXaT1Oy8CDYDWfE=
 github.com/3JoB/ulib v1.30.0 h1:SdkTKKZyDw13wsU4cXzOFVUa46dHBi7p5CYzMSujyRg=
@@ -24,6 +26,8 @@ github.com/google/pprof v0.0.0-20230323073829-e72429f035bd h1:r8yyd+DJDmsUhGrRBx
 github.com/google/pprof v0.0.0-20230323073829-e72429f035bd/go.mod h1:79YE0hCXdHag9sBkw2o+N/YnZtTkXi0UT9Nnixa5eYk=
 github.com/grafana/regexp v0.0.0-20221122212121-6b5c0a4cb7fd h1:PpuIBO5P3e9hpqBD0O/HjhShYuM6XE0i/lbE6J94kww=
 github.com/grafana/regexp v0.0.0-20221122212121-6b5c0a4cb7fd/go.mod h1:M5qHK+eWfAv8VR/265dIuEpL3fNfeC21tXXp9itM24A=
+github.com/klauspost/compress v1.16.4 h1:91KN02FnsOYhuunwU4ssRe8lc2JosWmizWa91B5v1PU=
+github.com/klauspost/compress v1.16.4/go.mod h1:ntbaceVETuRiXiv4DpjP66DpAtAGkEQskQzEyD//IeE=
 github.com/onsi/ginkgo/v2 v2.9.5 h1:+6Hr4uxzP4XIUyAkg61dWBw8lb/gc4/X5luuxN/EC+Q=
 github.com/onsi/ginkgo/v2 v2.9.5/go.mod h1:tvAoo1QUJwNEU2ITftXTpR7R1RbCzoZUOs3RonqW57k=
 github.com/onsi/gomega v1.27.6 h1:ENqfyGeS5AX/rlXDd/ETokDz93u0YufY1Pgxuy/PvWE=

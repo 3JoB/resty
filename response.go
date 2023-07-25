@@ -5,6 +5,7 @@
 package resty
 
 import (
+	"encoding/xml"
 	"fmt"
 	"io"
 	"net/http"
@@ -42,6 +43,11 @@ func (r *Response) Body() []byte {
 // Bind the data in the body to the structure.
 func (r *Response) Bind(v any) error {
 	return json.Unmarshal(r.Body(), v)
+}
+
+// Bind the data in the body to the structure.
+func (r *Response) BindXML(v any) error {
+	return xml.Unmarshal(r.Body(), v)
 }
 
 // Example:
@@ -190,4 +196,12 @@ func (r *Response) fmtBodyString(sl int64) string {
 	}
 
 	return "***** NO CONTENT *****"
+}
+
+func (r *Response) nowRead(body io.Reader) (*Response, error) {
+	var err error
+	if r.body, err = io.ReadAll(body); err != nil {
+		r.setReceivedAt()
+	}
+	return r, err
 }

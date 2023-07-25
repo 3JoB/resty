@@ -3,11 +3,13 @@ module github.com/3JoB/resty-ilo
 go 1.20
 
 require (
+	github.com/3JoB/brotli v0.0.1
 	github.com/3JoB/ulib v1.30.0
 	github.com/3JoB/unsafeConvert v1.5.0
 	github.com/goccy/go-json v0.10.2
 	github.com/goccy/go-reflect v1.2.0
 	github.com/grafana/regexp v0.0.0-20221122212121-6b5c0a4cb7fd
+	github.com/klauspost/compress v1.16.4
 	github.com/quic-go/quic-go v0.37.0
 	golang.org/x/net v0.12.0
 	lukechampine.com/frand v1.4.2
