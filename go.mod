@@ -4,12 +4,12 @@ go 1.20
 
 require (
 	github.com/3JoB/brotli v0.0.1
-	github.com/3JoB/ulib v1.30.0
+	github.com/3JoB/ulib v1.31.0
 	github.com/3JoB/unsafeConvert v1.5.0
 	github.com/goccy/go-json v0.10.2
 	github.com/goccy/go-reflect v1.2.0
 	github.com/grafana/regexp v0.0.0-20221122212121-6b5c0a4cb7fd
-	github.com/klauspost/compress v1.16.4
+	github.com/klauspost/compress v1.16.7
 	github.com/quic-go/quic-go v0.37.0
 	golang.org/x/net v0.12.0
 	lukechampine.com/frand v1.4.2
@@ -26,8 +26,8 @@ require (
 	github.com/quic-go/qpack v0.4.0 // indirect
 	github.com/quic-go/qtls-go1-20 v0.3.0 // indirect
 	golang.org/x/crypto v0.11.0 // indirect
-	golang.org/x/exp v0.0.0-20230321023759-10a507213a29 // indirect
-	golang.org/x/mod v0.10.0 // indirect
+	golang.org/x/exp v0.0.0-20230713183714-613f0c0eb8a1 // indirect
+	golang.org/x/mod v0.11.0 // indirect
 	golang.org/x/sys v0.10.0 // indirect
 	golang.org/x/text v0.11.0 // indirect
 	golang.org/x/tools v0.9.1 // indirect
