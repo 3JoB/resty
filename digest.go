@@ -17,6 +17,7 @@ import (
 	"strings"
 
 	errs "github.com/3JoB/ulib/err"
+	"github.com/3JoB/ulib/litefmt"
 	"github.com/3JoB/unsafeConvert"
 	"lukechampine.com/frand"
 )
@@ -193,22 +194,22 @@ func (c *credentials) authorize() (string, error) {
 	sl := make([]string, 0, 10)
 	if c.userhash == "true" {
 		// RFC 7616 3.4.4
-		c.username = c.h(fmt.Sprintf("%s:%s", c.username, c.realm))
-		sl = append(sl, fmt.Sprintf(`userhash=%s`, c.userhash))
+		c.username = c.h(litefmt.PSprintP(c.username,":", c.realm))
+		sl = append(sl, litefmt.PSprintP(`userhash=`, c.userhash))
 	}
-	sl = append(sl, fmt.Sprintf(`username="%s"`, c.username))
-	sl = append(sl, fmt.Sprintf(`realm="%s"`, c.realm))
-	sl = append(sl, fmt.Sprintf(`nonce="%s"`, c.nonce))
-	sl = append(sl, fmt.Sprintf(`uri="%s"`, c.digestURI))
-	sl = append(sl, fmt.Sprintf(`response="%s"`, resp))
-	sl = append(sl, fmt.Sprintf(`algorithm=%s`, c.algorithm))
+	sl = append(sl, litefmt.PSprintP(`username="`, c.username, `"`))
+	sl = append(sl, litefmt.PSprintP(`realm="`, c.realm, `"`))
+	sl = append(sl, litefmt.PSprintP(`nonce="`, c.nonce, `"`))
+	sl = append(sl, litefmt.PSprintP(`uri="`, c.digestURI, `"`))
+	sl = append(sl, litefmt.PSprintP(`response="`, resp, `"`))
+	sl = append(sl, litefmt.PSprintP(`algorithm=`, c.algorithm))
 	if c.opaque != "" {
-		sl = append(sl, fmt.Sprintf(`opaque="%s"`, c.opaque))
+		sl = append(sl, litefmt.PSprintP(`opaque="%s"`, c.opaque))
 	}
 	if c.messageQop != "" {
-		sl = append(sl, fmt.Sprintf("qop=%s", c.messageQop))
+		sl = append(sl, litefmt.PSprintP("qop=%s", c.messageQop))
 		sl = append(sl, fmt.Sprintf("nc=%08x", c.nc))
-		sl = append(sl, fmt.Sprintf(`cnonce="%s"`, c.cNonce))
+		sl = append(sl, litefmt.PSprintP(`cnonce="`, c.cNonce, `"`))
 	}
 
 	return fmt.Sprintf("Digest %s", strings.Join(sl, ", ")), nil
