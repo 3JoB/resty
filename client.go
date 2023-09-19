@@ -1274,7 +1274,7 @@ func (c *Client) Transport() (*http.Transport, error) {
 
 // just an internal helper method
 func (c *Client) outputLogTo(w io.Writer) *Client {
-	c.log.(*logger).l.SetOutput(w)
+	c.log.(*logger).SetOutput(w)
 	return c
 }
 

@@ -351,8 +351,10 @@ func parseResponseBody(c *Client, res *Response) (err error) {
 		if res.IsSuccess() {
 			res.Request.Error = nil
 			if res.Request.Result != nil {
-				err = Unmarshalc(c, ct, res.body, res.Request.Result)
-				return
+				unmarshalErr := Unmarshalc(c, ct, res.body, res.Request.Error)
+				if unmarshalErr != nil {
+					c.log.Warnf(litefmt.PSprint("Cannot unmarshal response body: ", unmarshalErr.Error()))
+				}
 			}
 		}
 

@@ -558,7 +558,7 @@ func TestRequestInsecureBasicAuth(t *testing.T) {
 
 	var logBuf bytes.Buffer
 	logger := createLogger()
-	logger.l.SetOutput(&logBuf)
+	logger.SetOutput(&logBuf)
 
 	c := dc()
 	c.SetHostURL(ts.URL)

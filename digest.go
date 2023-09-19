@@ -194,22 +194,22 @@ func (c *credentials) authorize() (string, error) {
 	sl := make([]string, 0, 10)
 	if c.userhash == "true" {
 		// RFC 7616 3.4.4
-		c.username = c.h(litefmt.PSprintP(c.username,":", c.realm))
-		sl = append(sl, litefmt.PSprintP(`userhash=`, c.userhash))
+		c.username = c.h(litefmt.PSprint(c.username, ":", c.realm))
+		sl = append(sl, litefmt.PSprint(`userhash=`, c.userhash))
 	}
-	sl = append(sl, litefmt.PSprintP(`username="`, c.username, `"`))
-	sl = append(sl, litefmt.PSprintP(`realm="`, c.realm, `"`))
-	sl = append(sl, litefmt.PSprintP(`nonce="`, c.nonce, `"`))
-	sl = append(sl, litefmt.PSprintP(`uri="`, c.digestURI, `"`))
-	sl = append(sl, litefmt.PSprintP(`response="`, resp, `"`))
-	sl = append(sl, litefmt.PSprintP(`algorithm=`, c.algorithm))
+	sl = append(sl, litefmt.PSprint(`username="`, c.username, `"`))
+	sl = append(sl, litefmt.PSprint(`realm="`, c.realm, `"`))
+	sl = append(sl, litefmt.PSprint(`nonce="`, c.nonce, `"`))
+	sl = append(sl, litefmt.PSprint(`uri="`, c.digestURI, `"`))
+	sl = append(sl, litefmt.PSprint(`response="`, resp, `"`))
+	sl = append(sl, litefmt.PSprint(`algorithm=`, c.algorithm))
 	if c.opaque != "" {
-		sl = append(sl, litefmt.PSprintP(`opaque="%s"`, c.opaque))
+		sl = append(sl, litefmt.PSprint(`opaque="%s"`, c.opaque))
 	}
 	if c.messageQop != "" {
-		sl = append(sl, litefmt.PSprintP("qop=%s", c.messageQop))
+		sl = append(sl, litefmt.PSprint("qop=%s", c.messageQop))
 		sl = append(sl, fmt.Sprintf("nc=%08x", c.nc))
-		sl = append(sl, litefmt.PSprintP(`cnonce="`, c.cNonce, `"`))
+		sl = append(sl, litefmt.PSprint(`cnonce="`, c.cNonce, `"`))
 	}
 
 	return fmt.Sprintf("Digest %s", strings.Join(sl, ", ")), nil

@@ -8,7 +8,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"log"
 	"mime/multipart"
 	"net/http"
 	"net/textproto"
@@ -20,6 +19,7 @@ import (
 	"sync"
 
 	"github.com/goccy/go-reflect"
+	"github.com/rs/zerolog"
 )
 
 // ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
@@ -35,14 +35,18 @@ type Logger interface {
 }
 
 func createLogger() *logger {
-	l := &logger{l: log.New(os.Stderr, "", log.Ldate|log.Lmicroseconds)}
+	l := &logger{l: zerolog.New(zerolog.ConsoleWriter{Out: os.Stdout}).With().Timestamp().Logger()}
 	return l
 }
 
 var _ Logger = (*logger)(nil)
 
 type logger struct {
-	l *log.Logger
+	l zerolog.Logger
+}
+
+func (l *logger) SetOutput(w io.Writer) {
+	l.l = l.l.Output(w)
 }
 
 func (l *logger) Errorf(format string, v ...any) {
