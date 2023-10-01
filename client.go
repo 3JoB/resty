@@ -62,7 +62,6 @@ var (
 	hdrContentTypeKey     = http.CanonicalHeaderKey("Content-Type")
 	hdrContentLengthKey   = http.CanonicalHeaderKey("Content-Length")
 	hdrContentEncodingKey = http.CanonicalHeaderKey("Content-Encoding")
-	hdrLocationKey        = http.CanonicalHeaderKey("Location")
 	hdrAuthorizationKey   = http.CanonicalHeaderKey("Authorization")
 	hdrWwwAuthenticateKey = http.CanonicalHeaderKey("WWW-Authenticate")
 
@@ -70,8 +69,8 @@ var (
 	jsonContentType = "application/json"
 	formContentType = "application/x-www-form-urlencoded"
 
-	jsonCheck = regexp.MustCompile(`(?i:(application|text)/(json|.*\+json|json\-.*)(;|$))`)
-	xmlCheck  = regexp.MustCompile(`(?i:(application|text)/(xml|.*\+xml)(;|$))`)
+	jsonCheck = regexp.MustCompile(`(?i:(application|text)/(.*json.*)(;|$))`)
+	xmlCheck  = regexp.MustCompile(`(?i:(application|text)/(.*xml.*)(;|$))`)
 
 	hdrUserAgentValue = fmt.Sprintf("go-resty-ilo/%v (https://github.com/3JoB/resty-ilo)", Version)
 	bufPool           = &sync.Pool{New: func() any { return &bytes.Buffer{} }}
@@ -164,6 +163,7 @@ type Client struct {
 	errorHooks          []ErrorHook
 	invalidHooks        []ErrorHook
 	panicHooks          []ErrorHook
+	rateLimiter         RateLimiter
 }
 
 // User type is to hold an username and password information
@@ -465,17 +465,18 @@ func (c *Client) SetHttp3Custom(r *http3.RoundTripper) *Client {
 // R method creates a new request instance, its used for Get, Post, Put, Delete, Patch, Head, Options, etc.
 func (c *Client) R() *Request {
 	r := &Request{
-		QueryParam: url.Values{},
-		FormData:   url.Values{},
-		Header:     http.Header{},
-		Cookies:    make([]*http.Cookie, 0),
+		QueryParam:    url.Values{},
+		FormData:      url.Values{},
+		Header:        http.Header{},
+		Cookies:       make([]*http.Cookie, 0),
+		PathParams:    map[string]string{},
+		RawPathParams: map[string]string{},
+		Debug:         c.Debug,
 
 		client:          c,
 		multipartFiles:  []*File{},
 		multipartFields: []*MultipartField{},
-		PathParams:      map[string]string{},
-		RawPathParams:   map[string]string{},
-		jsonEscapeHTML:  true,
+		jsonEscapeHTML:  c.jsonEscapeHTML,
 		log:             c.log,
 	}
 	return r
@@ -935,6 +936,13 @@ func (c *Client) SetOutputDirectory(dirPath string) *Client {
 	return c
 }
 
+// SetRateLimiter sets an optional `RateLimiter`. If set the rate limiter will control
+// all requests made with this client.
+func (c *Client) SetRateLimiter(rl RateLimiter) *Client {
+	c.rateLimiter = rl
+	return c
+}
+
 // SetTransport method sets custom `*http.Transport` or any `http.RoundTripper`
 // compatible interface implementation in the resty client.
 //
@@ -1152,6 +1160,14 @@ func (c *Client) execute(req *Request) (*Response, error) {
 		}
 	}
 
+	// If there is a rate limiter set for this client, the Execute call
+	// will return an error if the rate limit is exceeded.
+	if req.client.rateLimiter != nil {
+		if !req.client.rateLimiter.Allow() {
+			return nil, wrapNoRetryErr(ErrRateLimitExceeded)
+		}
+	}
+
 	// resty middlewares
 	for _, f := range c.beforeRequest {
 		if err = f(c, req); err != nil {
@@ -1270,12 +1286,6 @@ func (c *Client) Transport() (*http.Transport, error) {
 		return transport, nil
 	}
 	return nil, errors.New("current transport is not an *http.Transport instance")
-}
-
-// just an internal helper method
-func (c *Client) outputLogTo(w io.Writer) *Client {
-	c.log.(*logger).SetOutput(w)
-	return c
 }
 
 // ResponseError is a wrapper for including the server response with an error.

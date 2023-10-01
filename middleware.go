@@ -30,7 +30,7 @@ const debugRequestLogKey = "__restyDebugRequestLog"
 // _______________________________________________________________________
 func parseRequestURL(c *Client, r *Request) error {
 	// GitHub #103 Path Params
-	if len(r.PathParams) > 0 {
+	if len(r.fallbackContentType) > 0 {
 		for p, v := range r.PathParams {
 			r.URL = strings.ReplaceAll(r.URL, "{"+p+"}", url.PathEscape(v))
 		}
@@ -67,7 +67,12 @@ func parseRequestURL(c *Client, r *Request) error {
 			r.URL = "/" + r.URL
 		}
 
-		reqURL, err = url.Parse(c.HostURL + r.URL)
+		// TODO: change to use c.BaseURL only in v3.0.0
+		baseURL := c.BaseURL
+		if len(baseURL) == 0 {
+			baseURL = c.HostURL
+		}
+		reqURL, err = url.Parse(baseURL + r.URL)
 		if err != nil {
 			return err
 		}
@@ -114,27 +119,20 @@ func parseRequestURL(c *Client, r *Request) error {
 }
 
 func parseRequestHeader(c *Client, r *Request) error {
-	hdr := make(http.Header)
-	for k := range c.Header {
-		hdr[k] = append(hdr[k], c.Header[k]...)
+	for k, v := range c.Header {
+		if _, ok := r.Header[k]; ok {
+			continue
+		}
+		r.Header[k] = v[:]
 	}
 
-	for k := range r.Header {
-		hdr.Del(k)
-		hdr[k] = append(hdr[k], r.Header[k]...)
+	if IsStringEmpty(r.Header.Get(hdrUserAgentKey)) {
+		r.Header.Set(hdrUserAgentKey, hdrUserAgentValue)
 	}
 
-	if IsStringEmpty(hdr.Get(hdrUserAgentKey)) {
-		hdr.Set(hdrUserAgentKey, hdrUserAgentValue)
+	if ct := r.Header.Get(hdrContentTypeKey); IsStringEmpty(r.Header.Get(hdrAcceptKey)) && !IsStringEmpty(ct) && (IsJSONType(ct) || IsXMLType(ct)) {
+		r.Header.Set(hdrAcceptKey, r.Header.Get(hdrContentTypeKey))
 	}
-
-	ct := hdr.Get(hdrContentTypeKey)
-	if IsStringEmpty(hdr.Get(hdrAcceptKey)) && !IsStringEmpty(ct) &&
-		(IsJSONType(ct) || IsXMLType(ct)) {
-		hdr.Set(hdrAcceptKey, hdr.Get(hdrContentTypeKey))
-	}
-
-	r.Header = hdr
 
 	return nil
 }
@@ -277,7 +275,7 @@ func addCredentials(c *Client, r *Request) error {
 }
 
 func requestLogger(c *Client, r *Request) error {
-	if c.Debug || r.requestDumpFunction != nil {
+	if r.requestDumpFunction != nil {
 		rr := r.RawRequest
 		rl := &RequestLog{Header: copyHeaders(rr.Header), Body: r.fmtBodyString(c.debugBodySizeLimit)}
 		if c.requestLog != nil {
@@ -306,7 +304,7 @@ func requestLogger(c *Client, r *Request) error {
 // Response Middleware(s)
 // _______________________________________________________________________
 func responseLogger(c *Client, res *Response) error {
-	if c.Debug || res.Request.requestDumpFunction != nil {
+	if res.Request.requestDumpFunction != nil {
 		rl := &ResponseLog{Header: copyHeaders(res.Header()), Body: res.fmtBodyString(c.debugBodySizeLimit)}
 		if c.responseLog != nil {
 			if err := c.responseLog(rl); err != nil {
