@@ -11,13 +11,6 @@
 <p align="center"><a href="https://gitter.im/go_resty/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"><img src="https://badges.gitter.im/go_resty/community.svg" alt="Chat on Gitter - Resty Community"></a> <a href="https://twitter.com/go_resty"><img src="https://img.shields.io/badge/twitter-@go__resty-55acee.svg" alt="Twitter @go_resty"></a></p>
 </p>
 
-## News
-
-  * v2.7.0 [released](https://github.com/go-resty/resty/releases/tag/v2.7.0) and tagged on Nov 03, 2021.
-  * v2.0.0 [released](https://github.com/go-resty/resty/releases/tag/v2.0.0) and tagged on Jul 16, 2019.
-  * v1.12.0 [released](https://github.com/go-resty/resty/releases/tag/v1.12.0) and tagged on Feb 27, 2019.
-  * v1.0 released and tagged on Sep 25, 2017. - Resty's first version was released on Sep 15, 2015 then it grew gradually as a very handy and helpful library. Its been a two years since first release. I'm very thankful to Resty users and its [contributors](https://github.com/go-resty/resty/graphs/contributors).
-
 ## Features
 
   * GET, POST, PUT, DELETE, HEAD, PATCH, OPTIONS, etc.
@@ -86,13 +79,13 @@
 
 #### Supported Go Versions
 
-Recommended to use `go1.20` and above.
+Recommended to use `go1.21.1` and above.
 
 Initially Resty started supporting `go modules` since `v1.10.0` release.
 
 Starting Resty v2 and higher versions, it fully embraces [go modules](https://github.com/golang/go/wiki/Modules) package release. It requires a Go version capable of understanding `/vN` suffixed imports:
 
-- 1.20+
+- 1.21.1+
 
 
 ## It might be beneficial for your project :smile:
@@ -108,7 +101,7 @@ Resty author also published following projects for Go Community.
 
 ```bash
 # Go Modules
-require github.com/3JoB/resty-ilo v1.1.4
+require github.com/3JoB/resty-ilo v1.3.0
 ```
 
 ## Usage
