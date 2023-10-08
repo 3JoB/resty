@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/3JoB/unsafeConvert"
-	"github.com/goccy/go-json"
+	"github.com/sugawarayuuta/sonnet"
 )
 
 // ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
@@ -40,9 +40,21 @@ func (r *Response) Body() []byte {
 	return r.body
 }
 
+// SetBody method is to set Response body in byte slice. Typically,
+// its helpful for test cases.
+//
+//	resp.SetBody([]byte("This is test body content"))
+//	resp.SetBody(nil)
+//
+// Since v2.10.0
+func (r *Response) SetBody(b []byte) *Response {
+	r.body = b
+	return r
+}
+
 // Bind the data in the body to the structure.
 func (r *Response) Bind(v any) error {
-	return json.Unmarshal(r.Body(), v)
+	return sonnet.Unmarshal(r.Body(), v)
 }
 
 // Bind the data in the body to the structure.
@@ -186,8 +198,7 @@ func (r *Response) fmtBodyString(sl int64) string {
 		if IsJSONType(ct) {
 			out := acquireBuffer()
 			defer releaseBuffer(out)
-			err := json.Indent(out, r.body, "", "   ")
-			if err != nil {
+			if err := sonnet.Indent(out, r.body, "", "   "); err != nil {
 				return fmt.Sprintf("*** Error: Unable to format response body - \"%s\" ***\n\nLog Body as-is:\n%s", err, r.String())
 			}
 			return out.String()

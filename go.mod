@@ -6,12 +6,12 @@ require (
 	github.com/3JoB/brotli v0.0.1
 	github.com/3JoB/ulib v1.36.2
 	github.com/3JoB/unsafeConvert v1.6.0
-	github.com/goccy/go-json v0.10.2
 	github.com/goccy/go-reflect v1.2.0
 	github.com/grafana/regexp v0.0.0-20221122212121-6b5c0a4cb7fd
 	github.com/klauspost/compress v1.17.0
 	github.com/quic-go/quic-go v0.39.0
 	github.com/rs/zerolog v1.31.0
+	github.com/sugawarayuuta/sonnet v0.0.0-20231004000330-239c7b6e4ce8
 	golang.org/x/net v0.15.0
 	lukechampine.com/frand v1.4.2
 	pgregory.net/rand v1.0.2

@@ -23,7 +23,6 @@ import (
 
 	"github.com/3JoB/brotli"
 	"github.com/3JoB/unsafeConvert"
-	"github.com/goccy/go-json"
 	"github.com/goccy/go-reflect"
 	"github.com/grafana/regexp"
 	"github.com/klauspost/compress/flate"
@@ -31,6 +30,7 @@ import (
 	"github.com/klauspost/compress/zstd"
 	"github.com/quic-go/quic-go"
 	"github.com/quic-go/quic-go/http3"
+	"github.com/sugawarayuuta/sonnet"
 )
 
 const (
@@ -1380,8 +1380,8 @@ func createClient(hc *http.Client) *Client {
 		RetryMaxWaitTime:       defaultMaxWaitTime,
 		PathParams:             make(map[string]string),
 		RawPathParams:          make(map[string]string),
-		JSONMarshal:            json.Marshal,
-		JSONUnmarshal:          json.Unmarshal,
+		JSONMarshal:            sonnet.Marshal,
+		JSONUnmarshal:          sonnet.Unmarshal,
 		XMLMarshal:             xml.Marshal,
 		XMLUnmarshal:           xml.Unmarshal,
 		HeaderAuthorizationKey: http.CanonicalHeaderKey("Authorization"),

@@ -17,8 +17,8 @@ import (
 	"time"
 
 	"github.com/3JoB/unsafeConvert"
-	"github.com/goccy/go-json"
 	"github.com/goccy/go-reflect"
+	"github.com/sugawarayuuta/sonnet"
 )
 
 // ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
@@ -1021,7 +1021,7 @@ func (r *Request) fmtBodyString(sl int64) (body string) {
 			bodyBytes := unsafeConvert.ByteSlice(b)
 			out := acquireBuffer()
 			defer releaseBuffer(out)
-			if err = json.Indent(out, bodyBytes, "", "   "); err == nil {
+			if err = sonnet.Indent(out, bodyBytes, "", "   "); err == nil {
 				prtBodyBytes = out.Bytes()
 			}
 		} else {
@@ -1033,11 +1033,11 @@ func (r *Request) fmtBodyString(sl int64) (body string) {
 	}
 
 	if prtBodyBytes != nil && err == nil {
-		body = unsafeConvert.StringSlice(prtBodyBytes)
+		body = unsafeConvert.StringPointer(prtBodyBytes)
 	}
 
 	if len(body) > 0 {
-		bodySize := int64(len(unsafeConvert.ByteSlice(body)))
+		bodySize := int64(len(unsafeConvert.BytePointer(body)))
 		if bodySize > sl {
 			body = fmt.Sprintf("***** REQUEST TOO LARGE (size - %d) *****", bodySize)
 		}
@@ -1066,7 +1066,7 @@ func (r *Request) initValuesMap() {
 
 var noescapeJSONMarshal = func(v any) (*bytes.Buffer, error) {
 	buf := acquireBuffer()
-	encoder := json.NewEncoder(buf)
+	encoder := sonnet.NewEncoder(buf)
 	encoder.SetEscapeHTML(false)
 	if err := encoder.Encode(v); err != nil {
 		releaseBuffer(buf)
@@ -1080,7 +1080,7 @@ var noescapeJSONMarshalIndent = func(v any) ([]byte, error) {
 	buf := acquireBuffer()
 	defer releaseBuffer(buf)
 
-	encoder := json.NewEncoder(buf)
+	encoder := sonnet.NewEncoder(buf)
 	encoder.SetEscapeHTML(false)
 	encoder.SetIndent("", "   ")
 
