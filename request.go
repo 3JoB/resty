@@ -1018,7 +1018,7 @@ func (r *Request) fmtBodyString(sl int64) (body string) {
 		prtBodyBytes, err = xml.MarshalIndent(&r.Body, "", "   ")
 	} else if b, ok := r.Body.(string); ok {
 		if IsJSONType(contentType) {
-			bodyBytes := unsafeConvert.ByteSlice(b)
+			bodyBytes := unsafeConvert.BytePointer(b)
 			out := acquireBuffer()
 			defer releaseBuffer(out)
 			if err = sonnet.Indent(out, bodyBytes, "", "   "); err == nil {

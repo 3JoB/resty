@@ -922,7 +922,7 @@ func (c *Client) SetRootCertificateFromString(pemContent string) *Client {
 		config.RootCAs = x509.NewCertPool()
 	}
 
-	config.RootCAs.AppendCertsFromPEM(unsafeConvert.ByteSlice(pemContent))
+	config.RootCAs.AppendCertsFromPEM(unsafeConvert.BytePointer(pemContent))
 	return c
 }
 

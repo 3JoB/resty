@@ -131,7 +131,7 @@ func (r *Response) String() string {
 	if len(r.body) == 0 {
 		return ""
 	}
-	return strings.TrimSpace(unsafeConvert.StringSlice(r.body))
+	return strings.TrimSpace(unsafeConvert.StringPointer(r.body))
 }
 
 // Time method returns the time of HTTP response time that from request we sent and received a request.
