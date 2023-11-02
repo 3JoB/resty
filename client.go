@@ -445,19 +445,19 @@ func (c *Client) SetDigestAuth(username, password string) *Client {
 // Enable http3 support for this client
 //
 // Note: This operation will cover the Transport parameter.
-func (c *Client) SetHttp3Enable() *Client {
+func (c *Client) SetHTTP3Enable() *Client {
 	c.httpClient.Transport = &http3.RoundTripper{}
 	return c
 }
 
-func (c *Client) SetHttp3EnableWithDial(dial func(ctx context.Context, addr string, tlsCfg *tls.Config, cfg *quic.Config) (quic.EarlyConnection, error)) *Client {
+func (c *Client) SetHTTP3EnableWithDial(dial func(ctx context.Context, addr string, tlsCfg *tls.Config, cfg *quic.Config) (quic.EarlyConnection, error)) *Client {
 	c.httpClient.Transport = &http3.RoundTripper{
 		Dial: dial,
 	}
 	return c
 }
 
-func (c *Client) SetHttp3Custom(r *http3.RoundTripper) *Client {
+func (c *Client) SetHTTP33Custom(r *http3.RoundTripper) *Client {
 	c.httpClient.Transport = r
 	return c
 }
