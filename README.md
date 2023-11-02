@@ -101,7 +101,7 @@ Resty author also published following projects for Go Community.
 
 ```bash
 # Go Modules
-require github.com/3JoB/resty-ilo v1.4.0
+require github.com/3JoB/resty-ilo v1.5.0
 ```
 
 ## Usage
